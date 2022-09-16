@@ -51,7 +51,7 @@ public class QuestionController {
 	@PostMapping("/questions")
 	public ResponseEntity<QuestionDTO> saveQuestion(@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
 
-		log.debug("REST request to Save Question");
+		log.debug("REST request to Save Question {} ", questionDTO);
 		questionValidator.validateCreateQuestion(questionDTO);
 		questionDTO = questionService.saveQuestion(questionDTO);
 		return ResponseEntity
@@ -101,15 +101,15 @@ public class QuestionController {
 	 */
 	@PutMapping("/questions/{userId}/validate-question")
 	public ResponseEntity<QuestionDTO> reviewQuestions(@PathVariable("userId") String userId,
-			@Valid @RequestBody QuestionDTO questionDTO ) throws Exception {
+			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
 
-		log.debug("REST request to get Validate Question {},{}" , userId, questionDTO);
+		log.debug("REST request to get Validate Question {},{}", userId, questionDTO);
 		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, null))
 				.body(updateObject);
 	}
-	
+
 	/**
 	 * 
 	 * @param questionDTO
@@ -118,9 +118,9 @@ public class QuestionController {
 	 */
 	@PutMapping("/questions/{userId}/reject-question")
 	public ResponseEntity<QuestionDTO> rejectQuestions(@PathVariable("userId") String userId,
-			@Valid @RequestBody QuestionDTO questionDTO ) throws Exception {
+			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
 
-		log.debug("REST request to get Reject Question {},{}" , userId, questionDTO);
+		log.debug("REST request to get Reject Question {},{}", userId, questionDTO);
 		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, null))
