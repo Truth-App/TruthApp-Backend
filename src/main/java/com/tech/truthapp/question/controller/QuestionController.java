@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tech.truthapp.dto.QuestionDTO;
+import com.tech.truthapp.dto.QuestionResponsesDTO;
 import com.tech.truthapp.exception.HeaderUtil;
 import com.tech.truthapp.question.service.QuestionService;
 import com.tech.truthapp.question.validation.QuestionValidator;
@@ -99,10 +100,24 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
+	@GetMapping("/questions/reviewquestions")
+	public ResponseEntity<List<QuestionDTO>> getReviewQuestions() throws Exception {
+		log.debug("REST request to get Review Questions");
+		List<QuestionDTO> userQuestionList = questionService.getReviewQuestions();
+		return ResponseEntity.created(new URI("/api/questions/reviewquestions"))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
+				.body(userQuestionList);
+	}
+
+	/**
+	 * 
+	 * @param questionDTO
+	 * @return questionDTO
+	 * @throws Exception
+	 */
 	@PutMapping("/questions/{userId}/validate-question")
 	public ResponseEntity<QuestionDTO> reviewQuestions(@PathVariable("userId") String userId,
 			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
-
 		log.debug("REST request to get Validate Question {},{}", userId, questionDTO);
 		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
@@ -116,14 +131,47 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@PutMapping("/questions/{userId}/reject-question")
-	public ResponseEntity<QuestionDTO> rejectQuestions(@PathVariable("userId") String userId,
-			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
-
-		log.debug("REST request to get Reject Question {},{}", userId, questionDTO);
-		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
+	@PostMapping("/questions/{question-id}/responses")
+	public ResponseEntity<QuestionDTO> createResponse(@PathVariable("question-id") String questionId,
+			@Valid @RequestBody QuestionResponsesDTO responseDTO) throws Exception {
+		log.debug("REST request to get create Response for Question {},{}", questionId, responseDTO);
+		QuestionDTO updateObject = questionService.createQuestionResponse(questionId, responseDTO);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
+				.body(updateObject);
+	}
+
+	/**
+	 * 
+	 * @param questionDTO
+	 * @return questionDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/questions/{question-id}/responses")
+	public ResponseEntity<List<QuestionResponsesDTO>> getQuestionResponse(
+			@PathVariable("question-id") String questionId) throws Exception {
+		log.debug("REST request to get Get Response for Question {}", questionId);
+		List<QuestionResponsesDTO> responses = questionService.getQuestionResponse(questionId);
+		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
+				.body(responses);
+	}
+
+	/**
+	 * 
+	 * @param questionDTO
+	 * @return questionDTO
+	 * @throws Exception
+	 */
+	@PutMapping("/questions/{question-id}/responses/{userId}/validateResponses")
+	public ResponseEntity<QuestionDTO> validateResponse(@PathVariable("question-id") String questionId,
+			@PathVariable("userId") String userId,
+			@Valid @RequestBody QuestionResponsesDTO responseDTO) throws Exception {
+		responseDTO.setReviewerId(userId);
+		log.debug("REST request to get Validate Response for Question {},{}", questionId, responseDTO);
+		QuestionDTO updateObject = questionService.validateQuestionResponse(questionId, responseDTO);
+		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
 				.body(updateObject);
 	}
 }

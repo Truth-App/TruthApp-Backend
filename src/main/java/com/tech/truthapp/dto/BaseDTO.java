@@ -13,9 +13,9 @@ import lombok.ToString;
 @NoArgsConstructor
 public class BaseDTO {
 
-	protected Date createdOn;
+	protected Date createdAt;
 	protected String createdBy;	
-	protected Date updateOn;
+	protected Date updatedAt;
 	protected String lastModifiedBy;
 	protected Integer version;
 	
