@@ -3,14 +3,18 @@ package com.tech.truthapp.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
+@ToString
 @NoArgsConstructor
-public class QuestionResponses extends BaseModel{
+public class QuestionResponse extends BaseModel{
 
-	String answer;	
+	String id;
+	String response;	
 	String reviewerId;
 	Boolean isPublic;
+	Integer score;
 	Boolean isApproved;
 }

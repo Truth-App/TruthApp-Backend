@@ -19,6 +19,7 @@ public class QuestionDTO extends BaseDTO{
 	String category;
 	String reviewerId;
 	Boolean isPublic;
-	Boolean isApproved;	
+	Boolean isApproved;
+	Integer score;
 	List<QuestionResponsesDTO> responses;
 }

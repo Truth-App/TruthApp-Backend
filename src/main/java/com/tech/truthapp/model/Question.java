@@ -1,5 +1,6 @@
 package com.tech.truthapp.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -21,7 +22,8 @@ public class Question extends BaseModel{
 	String questionType;
 	String reviewerId;
 	String category;
+	Integer score;
 	Boolean isPublic;
 	Boolean isApproved;	
-	List<QuestionResponses> responses;
+	List<QuestionResponse> responses = new ArrayList<QuestionResponse>();
 }
