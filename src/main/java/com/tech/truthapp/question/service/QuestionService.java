@@ -48,6 +48,7 @@ public class QuestionService {
 		if (optionalQuestion.isPresent()) {
 			Question dbQuestion = optionalQuestion.get();
 			dbQuestion.setReviewerId(userId);
+			dbQuestion.setIsPublic(Boolean.TRUE);
 			dbQuestion.setIsApproved(Boolean.TRUE);
 			dbQuestion.setCategory(questionDTO.getCategory());
 			questionRepository.save(dbQuestion);
