@@ -89,7 +89,7 @@ public class QuestionController {
 		log.debug("REST request to get Reviewed Questions");
 		List<QuestionDTO> userQuestionList = questionService.getReviewedQuestions();
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, null))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
 				.body(userQuestionList);
 	}
 
@@ -106,7 +106,7 @@ public class QuestionController {
 		log.debug("REST request to get Validate Question {},{}", userId, questionDTO);
 		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, null))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
 				.body(updateObject);
 	}
 
@@ -123,7 +123,7 @@ public class QuestionController {
 		log.debug("REST request to get Reject Question {},{}", userId, questionDTO);
 		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, null))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
 				.body(updateObject);
 	}
 }
