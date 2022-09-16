@@ -1,6 +1,6 @@
 package com.tech.truthapp.model;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,12 +16,12 @@ import lombok.Setter;
 public class BaseModel {
 
 	@CreatedDate
-	protected LocalDateTime createdOn;
+	protected Date createdAt;
 	@CreatedBy
 	protected String createdBy;
 	
 	@LastModifiedDate
-	protected LocalDateTime updateOn;
+	protected Date updatedAt;
 	@LastModifiedBy
 	protected String lastModifiedBy;
 	@Version

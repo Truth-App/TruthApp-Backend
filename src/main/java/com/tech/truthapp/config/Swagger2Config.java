@@ -34,7 +34,7 @@ public class Swagger2Config {
                 .version("0.0.1")
                 .license("License Details")
                 .licenseUrl("License URL")
-                .contact(new Contact("Prem Kumar", "https://premkumar.org", "ppremkumar@gmail.com"))
+                .contact(new Contact("Prem Kumar", "https://mailtruthapp.org", "mailtruthapp@gmail.com"))
                 .build();
     }
 }
