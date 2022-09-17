@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +88,7 @@ public class QuestionService {
 			Question dbQuestion = optionalQuestion.get();
 			QuestionResponse response = questionResponseMapper.toEntity(responseDTO);
 			response.setResponse(responseDTO.getResponse());
+			response.setId(new ObjectId().toString());
 			response.setCreatedBy("system");
 			response.setCreatedAt(new Date());
 			response.setIsApproved(Boolean.FALSE);
@@ -122,7 +124,8 @@ public class QuestionService {
 			List<QuestionResponse> responses = dbQuestion.getResponses();
 
 			Optional<QuestionResponse> matchingObject = responses.stream()
-					.filter(object -> object.getId().equalsIgnoreCase(responseDTO.getId())).findFirst();
+					.filter(object -> object.getId() != null && object.getId().equalsIgnoreCase(responseDTO.getId()))
+					.findFirst();
 
 			if (matchingObject.isPresent()) {
 				QuestionResponse responseObject = matchingObject.get();
