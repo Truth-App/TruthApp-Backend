@@ -1,6 +1,5 @@
 package com.tech.truthapp.question.service;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +13,7 @@ import com.tech.truthapp.dto.QuestionDTO;
 import com.tech.truthapp.dto.QuestionResponsesDTO;
 import com.tech.truthapp.model.Question;
 import com.tech.truthapp.model.QuestionResponse;
+import com.tech.truthapp.model.QuestionResponseReviewer;
 import com.tech.truthapp.model.QuestionReviewer;
 import com.tech.truthapp.question.mapper.QuestionMapper;
 import com.tech.truthapp.question.mapper.QuestionResponseMapper;
@@ -140,9 +140,9 @@ public class QuestionService {
 			if (matchingObject.isPresent()) {
 				QuestionResponse responseObject = matchingObject.get();
 				responseObject.setIsApproved(Boolean.TRUE);
-				//responseObject.setReviewerId(responseDTO.getReviewerId());
-				List<QuestionReviewer> reviewerList = dbQuestion.getReviews();
-				QuestionReviewer questionReviewer = new QuestionReviewer();
+				List<QuestionResponseReviewer> reviewerList = responseObject.getReviews();
+				QuestionResponseReviewer questionReviewer = new QuestionResponseReviewer();
+				questionReviewer.setId(new ObjectId().toString());
 				questionReviewer.setComments(responseDTO.getComments());
 				questionReviewer.setReviewerId(responseDTO.getReviewerId());
 				reviewerList.add(questionReviewer);				
@@ -152,6 +152,7 @@ public class QuestionService {
 			}
 			return null;
 		} else {
+			System.out.println("Else block here");
 			// throw exception
 		}
 		return null;
