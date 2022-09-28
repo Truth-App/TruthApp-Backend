@@ -25,9 +25,16 @@ public interface QuestionRepository extends  MongoRepository<Question, String>{
 	@Query("{ 'isApproved' : false }")
 	public List<Question> findByReviewQuestions();
 	
-	@Query("{ 'id' : ?0, 'score' : ?1 }")
-	public Optional<Question> findByIdAndScoreGreaterThanZero(String id, BigDecimal value);
+	@Query("{ 'id' : ?0, 'score' : {$gt : ?1}}")
+	public Optional<Question> findByIdAndScoreGreaterThan(String id, BigDecimal value);
 	
 	@Query("{ 'id' : ?0 }")
 	public List<Question> findByIdInQuestions(List<String> ids);
+	
+	@Query("{ 'id' : ?0 }")
+	public Optional<Question> findByIdAndScoreGreaterThan(String id);
+	
+	@Query("{ 'id' : ?0, 'score' : 2 }")
+	public Optional<Question> findByIdAndScoreGreaterThanOne(String id);
+	
 }
