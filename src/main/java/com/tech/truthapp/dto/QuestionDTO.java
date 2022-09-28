@@ -22,4 +22,5 @@ public class QuestionDTO extends BaseDTO{
 	Boolean isApproved;
 	Integer score;
 	List<QuestionResponsesDTO> responses;
+	List<QuestionReviewerDTO> reviews;
 }

@@ -1,21 +1,19 @@
-package com.tech.truthapp.dto;
+package com.tech.truthapp.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter
 @Setter
+@Getter
 @ToString
 @NoArgsConstructor
-public class QuestionResponsesDTO extends BaseDTO{
+public class QuestionReviewer {
 
 	String id;
-	String response;	
+	String comments;	
 	String reviewerId;
-	Boolean isPublic;
 	Integer score;
-	Boolean isApproved;
-	String comments;
+	
 }

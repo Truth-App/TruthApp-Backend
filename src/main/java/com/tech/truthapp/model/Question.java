@@ -19,11 +19,11 @@ public class Question extends BaseModel{
 	@Id
 	String id;
 	String question;
-	String questionType;
-	String reviewerId;
+	String questionType;	
 	String category;
 	Integer score;
 	Boolean isPublic;
 	Boolean isApproved;	
 	List<QuestionResponse> responses = new ArrayList<QuestionResponse>();
+	List<QuestionReviewer> reviews = new ArrayList<QuestionReviewer>();
 }

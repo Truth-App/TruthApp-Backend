@@ -14,6 +14,7 @@ import com.tech.truthapp.dto.QuestionDTO;
 import com.tech.truthapp.dto.QuestionResponsesDTO;
 import com.tech.truthapp.model.Question;
 import com.tech.truthapp.model.QuestionResponse;
+import com.tech.truthapp.model.QuestionReviewer;
 import com.tech.truthapp.question.mapper.QuestionMapper;
 import com.tech.truthapp.question.mapper.QuestionResponseMapper;
 import com.tech.truthapp.question.repository.QuestionRepository;
@@ -59,11 +60,14 @@ public class QuestionService {
 	}
 
 	public QuestionDTO reviewQuestion(String userId, QuestionDTO questionDTO) {
-		Optional<Question> optionalQuestion = questionRepository.findByIdAndScoreGreaterThanZero(questionDTO.getId(),
-				BigDecimal.ONE);
+		//Optional<Question> optionalQuestion = questionRepository.findByIdAndScoreGreaterThan(questionDTO.getId());
+		Optional<Question> optionalQuestion = 
+				questionRepository.findByIdAndScoreGreaterThanOne(questionDTO.getId());
+		
 		if (optionalQuestion.isPresent()) {
 			Question dbQuestion = optionalQuestion.get();
-			dbQuestion.setReviewerId(userId);
+			dbQuestion.setIsPublic(questionDTO.getIsPublic());
+			//dbQuestion.setReviewerId(userId);
 			if (questionDTO.getIsApproved()) {
 				dbQuestion.setIsApproved(Boolean.TRUE);
 				dbQuestion.setCategory(questionDTO.getCategory());
@@ -73,10 +77,16 @@ public class QuestionService {
 				score = score - 1;
 				dbQuestion.setScore(score);
 			}
+			QuestionReviewer questionReviewer = new QuestionReviewer();
+			questionReviewer.setReviewerId(userId);
+			questionReviewer.setComments(userId);
+			questionReviewer.setId(new ObjectId().toString());
+			dbQuestion.getReviews().add(questionReviewer);
 			questionRepository.save(dbQuestion);
 			QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 			return dtoObject;
 		} else {
+			System.out.println("Yes in side else condition");
 			// throw exception
 		}
 		return null;
@@ -130,7 +140,12 @@ public class QuestionService {
 			if (matchingObject.isPresent()) {
 				QuestionResponse responseObject = matchingObject.get();
 				responseObject.setIsApproved(Boolean.TRUE);
-				responseObject.setReviewerId(responseDTO.getReviewerId());
+				//responseObject.setReviewerId(responseDTO.getReviewerId());
+				List<QuestionReviewer> reviewerList = dbQuestion.getReviews();
+				QuestionReviewer questionReviewer = new QuestionReviewer();
+				questionReviewer.setComments(responseDTO.getComments());
+				questionReviewer.setReviewerId(responseDTO.getReviewerId());
+				reviewerList.add(questionReviewer);				
 				questionRepository.save(dbQuestion);
 				QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 				return dtoObject;

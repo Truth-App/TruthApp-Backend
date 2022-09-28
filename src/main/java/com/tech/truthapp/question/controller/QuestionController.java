@@ -115,12 +115,12 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@PutMapping("/questions/{userId}/validate-question")
+	@PutMapping("/questions/{userId}/validateQuestion")
 	public ResponseEntity<QuestionDTO> reviewQuestions(@PathVariable("userId") String userId,
 			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
 		log.debug("REST request to get Validate Question {},{}", userId, questionDTO);
 		QuestionDTO updateObject = questionService.reviewQuestion(userId, questionDTO);
-		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
+		return ResponseEntity.created(new URI("/api/questions/validateQuestion"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
 				.body(updateObject);
 	}
