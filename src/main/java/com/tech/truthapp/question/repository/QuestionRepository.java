@@ -22,7 +22,7 @@ public interface QuestionRepository extends  MongoRepository<Question, String>{
 	@Query("{ 'isPublic' : true, 'isApproved' : true }")
 	public List<Question> findByReviewedQuestions();
 	
-	@Query("{ 'isApproved' : false }")
+	@Query("{ 'isApproved' : false, 'score' : 2 }")
 	public List<Question> findByReviewQuestions();
 	
 	@Query("{ 'id' : ?0, 'score' : {$gt : ?1}}")
