@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+target/classes/META-INF/maven/com.tech/truthapp/pom.properties
