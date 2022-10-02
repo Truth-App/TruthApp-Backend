@@ -60,14 +60,11 @@ public class QuestionService {
 	}
 
 	public QuestionDTO reviewQuestion(String userId, QuestionDTO questionDTO) {
-		//Optional<Question> optionalQuestion = questionRepository.findByIdAndScoreGreaterThan(questionDTO.getId());
-		Optional<Question> optionalQuestion = 
-				questionRepository.findByIdAndScoreGreaterThanOne(questionDTO.getId());
-		
+		Optional<Question> optionalQuestion = questionRepository.findByquestionForReview(questionDTO.getId());
+				
 		if (optionalQuestion.isPresent()) {
 			Question dbQuestion = optionalQuestion.get();
 			dbQuestion.setIsPublic(questionDTO.getIsPublic());
-			//dbQuestion.setReviewerId(userId);
 			if (questionDTO.getIsApproved()) {
 				dbQuestion.setIsApproved(Boolean.TRUE);
 				dbQuestion.setCategory(questionDTO.getCategory());
@@ -102,7 +99,7 @@ public class QuestionService {
 			response.setCreatedBy("system");
 			response.setCreatedAt(new Date());
 			response.setIsApproved(Boolean.FALSE);
-			response.setScore(3);
+			response.setScore(2);
 			response.setLastModifiedBy("system");
 			response.setUpdatedAt(new Date());
 			dbQuestion.getResponses().add(response);

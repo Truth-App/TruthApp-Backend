@@ -22,19 +22,21 @@ public interface QuestionRepository extends  MongoRepository<Question, String>{
 	@Query("{ 'isPublic' : true, 'isApproved' : true }")
 	public List<Question> findByReviewedQuestions();
 	
-	@Query("{ 'isApproved' : false, 'score' : 2 }")
+	@Query("{ 'isApproved' : false, 'score' : {$gt : 0} }")
 	public List<Question> findByReviewQuestions();
-	
-	@Query("{ 'id' : ?0, 'score' : {$gt : ?1}}")
-	public Optional<Question> findByIdAndScoreGreaterThan(String id, BigDecimal value);
 	
 	@Query("{ 'id' : ?0 }")
 	public List<Question> findByIdInQuestions(List<String> ids);
 	
-	@Query("{ 'id' : ?0 }")
-	public Optional<Question> findByIdAndScoreGreaterThan(String id);
+	@Query("{ 'id' : ?0 , 'score' : {$gt : 0}}")
+	public Optional<Question> findByquestionForReview(String id);
 	
 	@Query("{ 'id' : ?0, 'score' : 2 }")
 	public Optional<Question> findByIdAndScoreGreaterThanOne(String id);
 	
+	public List<Question> findByIsApprovedIsFalseAndScoreGreaterThan(BigDecimal value);
+	
+	public List<Question> findByIsApprovedIsFalse();
+	
+	public List<Question> findByScoreGreaterThan(BigDecimal value);
 }
