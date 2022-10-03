@@ -138,16 +138,17 @@ public class QuestionService {
 				QuestionResponse responseObject = matchingObject.get();
 				responseObject.setIsApproved(Boolean.TRUE);
 				List<QuestionResponseReviewer> reviewerList = responseObject.getReviews();
-				QuestionResponseReviewer questionReviewer = new QuestionResponseReviewer();
-				questionReviewer.setId(new ObjectId().toString());
+				QuestionResponseReviewer questionReviewer = new QuestionResponseReviewer();				
 				questionReviewer.setComments(responseDTO.getComments());
 				questionReviewer.setReviewerId(responseDTO.getReviewerId());
 				reviewerList.add(questionReviewer);				
 				questionRepository.save(dbQuestion);
 				QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 				return dtoObject;
+			} else {
+				System.out.println("Yes there is no responses");
+				
 			}
-			return null;
 		} else {
 			System.out.println("Else block here");
 			// throw exception

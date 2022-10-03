@@ -1,7 +1,6 @@
-package com.tech.truthapp.dto;
+package com.tech.truthapp.dto.share;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.tech.truthapp.dto.BaseDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
-public class QuestionResponsesDTO extends BaseDTO{
+public class ShareResponsesDTO extends BaseDTO{
 
 	String id;
 	String response;	
@@ -21,6 +20,4 @@ public class QuestionResponsesDTO extends BaseDTO{
 	Integer score;
 	Boolean isApproved;
 	String comments;
-	
-	List<QuestionResponseReviewerDTO> reviews = new ArrayList<QuestionResponseReviewerDTO>();
 }

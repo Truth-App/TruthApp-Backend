@@ -1,4 +1,8 @@
-package com.tech.truthapp.dto;
+package com.tech.truthapp.dto.prayer;
+
+import java.util.List;
+
+import com.tech.truthapp.dto.BaseDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,5 +22,6 @@ public class PrayerDTO extends BaseDTO{
 	Boolean isPublic;
 	Boolean isApproved;
 	Integer score;
-	
+	List<PrayerResponsesDTO> responses;
+	List<PrayerReviewerDTO> reviews;
 }
