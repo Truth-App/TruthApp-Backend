@@ -115,7 +115,7 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@PutMapping("/questions/{userId}/validateQuestion")
+	@PutMapping("/questions/{userId}/validatequestion")
 	public ResponseEntity<QuestionDTO> reviewQuestions(@PathVariable("userId") String userId,
 			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
 		log.debug("REST request to get Validate Question {},{}", userId, questionDTO);
@@ -131,8 +131,8 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@PostMapping("/questions/{question-id}/responses")
-	public ResponseEntity<QuestionDTO> createResponse(@PathVariable("question-id") String questionId,
+	@PostMapping("/questions/{questionId}/responses")
+	public ResponseEntity<QuestionDTO> createResponse(@PathVariable("questionId") String questionId,
 			@Valid @RequestBody QuestionResponsesDTO responseDTO) throws Exception {
 		log.debug("REST request to get create Response for Question {},{}", questionId, responseDTO);
 		QuestionDTO updateObject = questionService.createQuestionResponse(questionId, responseDTO);
@@ -147,9 +147,9 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@GetMapping("/questions/{question-id}/responses")
+	@GetMapping("/questions/{questionId}/responses")
 	public ResponseEntity<List<QuestionResponsesDTO>> getQuestionResponse(
-			@PathVariable("question-id") String questionId) throws Exception {
+			@PathVariable("questionId") String questionId) throws Exception {
 		log.debug("REST request to get Get Response for Question {}", questionId);
 		List<QuestionResponsesDTO> responses = questionService.getQuestionResponse(questionId);
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
@@ -163,7 +163,7 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@PutMapping("/questions/{question-id}/responses/{userId}/validateResponses")
+	@PutMapping("/questions/{question-id}/responses/{userId}/validateresponses")
 	public ResponseEntity<QuestionDTO> validateResponse(@PathVariable("question-id") String questionId,
 			@PathVariable("userId") String userId,
 			@Valid @RequestBody QuestionResponsesDTO responseDTO) throws Exception {
