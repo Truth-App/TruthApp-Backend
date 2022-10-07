@@ -15,7 +15,8 @@ import lombok.ToString;
 public class QuestionResponsesDTO extends BaseDTO{
 
 	String id;
-	String response;	
+	String response;
+	String responderId;
 	String reviewerId;
 	Boolean isPublic;
 	Integer score;

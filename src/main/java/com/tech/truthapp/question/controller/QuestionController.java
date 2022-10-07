@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tech.truthapp.dto.QuestionDTO;
@@ -73,14 +74,11 @@ public class QuestionController {
 
 		log.debug("REST request to get Questions By User Id {}", userId);
 		List<QuestionDTO> userQuestionList = questionService.getAllQuestionsByUser(userId);
-		return ResponseEntity.created(new URI("/api/questions/" + userId))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
-				.body(userQuestionList);
+		return ResponseEntity.ok().body(userQuestionList);
 	}
 
 	/**
 	 * 
-	 * @param questionDTO
 	 * @return questionDTO
 	 * @throws Exception
 	 */
@@ -89,9 +87,7 @@ public class QuestionController {
 
 		log.debug("REST request to get Reviewed Questions");
 		List<QuestionDTO> userQuestionList = questionService.getReviewedQuestions();
-		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
-				.body(userQuestionList);
+		return ResponseEntity.ok().body(userQuestionList);
 	}
 
 	/**
@@ -104,9 +100,7 @@ public class QuestionController {
 	public ResponseEntity<List<QuestionDTO>> getReviewQuestions() throws Exception {
 		log.debug("REST request to get Review Questions");
 		List<QuestionDTO> userQuestionList = questionService.getReviewQuestions();
-		return ResponseEntity.created(new URI("/api/questions/reviewquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
-				.body(userQuestionList);
+		return ResponseEntity.ok().body(userQuestionList);
 	}
 
 	/**
@@ -152,9 +146,7 @@ public class QuestionController {
 			@PathVariable("questionId") String questionId) throws Exception {
 		log.debug("REST request to get Get Response for Question {}", questionId);
 		List<QuestionResponsesDTO> responses = questionService.getQuestionResponse(questionId);
-		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
-				.body(responses);
+		return ResponseEntity.ok().body(responses);
 	}
 
 	/**
@@ -173,5 +165,44 @@ public class QuestionController {
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
 				.body(updateObject);
+	}
+	
+	/**
+	 * 
+	 * @return questionDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/questions/reviewresponses")
+	public ResponseEntity<List<QuestionDTO>> getReviewResponses() throws Exception {
+		log.debug("REST request to get Review Responses");
+		List<QuestionDTO> userQuestionList = questionService.getReviewResponses();
+		return ResponseEntity.ok().body(userQuestionList);
+	}
+	
+	/**
+	 * 
+	 * @param questionDTO
+	 * @return questionDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/questions/categoryreviewedquestions")
+	public ResponseEntity<List<QuestionDTO>> getReviewedQuestionsForCategory
+				(@RequestParam(name = "category") String category) throws Exception {
+
+		log.debug("REST request to get Reviewed Questions for category {} ", category);
+		List<QuestionDTO> userQuestionList = questionService.getReviewedQuestionsForCategory(category);
+		return ResponseEntity.ok().body(userQuestionList);
+	}
+	
+	/**
+	 * 
+	 * @return questionDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/questions/{userId}/myreviewedresponses")
+	public ResponseEntity<List<QuestionDTO>> getMyReviewedResponses(@PathVariable("userId") String userId) throws Exception {
+		log.debug("REST request to get Review Responses");
+		List<QuestionDTO> userQuestionList = questionService.getMyReviewedResponses(userId);
+		return ResponseEntity.ok().body(userQuestionList);
 	}
 }

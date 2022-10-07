@@ -16,7 +16,7 @@ public class QuestionResponse extends BaseModel{
 
 	String id;
 	String response;	
-	String reviewerId;
+	String responderId;
 	Boolean isPublic;
 	Integer score;
 	Boolean isApproved;
