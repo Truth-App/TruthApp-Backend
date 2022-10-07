@@ -173,7 +173,7 @@ public class QuestionService {
 	}
 	
 	public List<QuestionDTO> getMyReviewedResponses(String userId) {
-		List<Question> userQuestionList = questionRepository.findByReviewedQuestions();
+		List<Question> userQuestionList = questionRepository.findByMyReviewedQuestions();
 		for (Question question : userQuestionList) {
 			question.getResponses().removeIf(object -> object.getResponderId() == null || 
 					!object.getResponderId().equalsIgnoreCase(userId));

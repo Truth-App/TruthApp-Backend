@@ -177,7 +177,7 @@ public class PrayerService {
 	}
 	
 	public List<PrayerDTO> getMyReviewedResponses(String userId) {
-		List<Prayer> list = prayerRepository.findByReviewedPrayers();
+		List<Prayer> list = prayerRepository.findByMyReviewedPrayers();
 		for (Prayer prayer : list) {
 			prayer.getResponses().removeIf(object -> object.getResponderId() == null || 
 					!object.getResponderId().equalsIgnoreCase(userId));

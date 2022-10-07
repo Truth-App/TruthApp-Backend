@@ -46,4 +46,7 @@ public interface QuestionRepository extends  MongoRepository<Question, String>{
 	public List<Question> findByIsApprovedIsFalse();
 	
 	public List<Question> findByScoreGreaterThan(BigDecimal value);
+	
+	@Query("{ 'isPublic' : true, 'isApproved' : true, 'responses.0' { $exists : true } }")
+	public List<Question> findByMyReviewedQuestions();
 }
