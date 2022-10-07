@@ -17,8 +17,8 @@ import lombok.ToString;
 public class PrayerResponse extends BaseModel{
 
 	String id;
-	String response;	
-	String reviewerId;
+	String response;
+	String responderId;
 	Boolean isPublic;
 	Integer score;
 	Boolean isApproved;

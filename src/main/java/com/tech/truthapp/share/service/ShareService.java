@@ -33,6 +33,8 @@ public class ShareService {
 
 	public ShareDTO saveShare(ShareDTO shareDTO) {
 		Share share = shareMapper.toEntity(shareDTO);
+		share.setIsApproved(Boolean.FALSE);
+		share.setScore(2);
 		shareRepository.save(share);
 		shareDTO = shareMapper.toDto(share);
 		return shareDTO;
@@ -66,9 +68,8 @@ public class ShareService {
 		Optional<Share> optionalObject = shareRepository.findByShareForReview(shareDTO.getId());
 				
 		if (optionalObject.isPresent()) {
-			Share dbShare = optionalObject.get();
-			dbShare.setIsPublic(shareDTO.getIsPublic());
-			if (dbShare.getIsApproved()) {
+			Share dbShare = optionalObject.get();			
+			if (shareDTO.getIsApproved()) {
 				dbShare.setIsApproved(Boolean.TRUE);
 				dbShare.setCategory(shareDTO.getCategory());
 			} else {
@@ -156,5 +157,30 @@ public class ShareService {
 			// throw exception
 		}
 		return null;
+	}
+	
+	public List<ShareDTO> getReviewedShareForCategory(String category) {
+		List<Share> list = shareRepository.findByReviewedSharesForCategory(category);
+		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		return dtoList;
+	}
+	
+	public List<ShareDTO> getReviewResponses() {
+		List<Share> list = shareRepository.findByReviewResponses();
+		for (Share share : list) {
+			share.getResponses().removeIf(object -> object.getIsApproved() && object.getScore() > 0);
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		return dtoList;
+	}
+	
+	public List<ShareDTO> getMyReviewedResponses(String userId) {
+		List<Share> list = shareRepository.findByReviewedShares();
+		for (Share share : list) {
+			share.getResponses().removeIf(object -> object.getResponderId() == null || 
+					!object.getResponderId().equalsIgnoreCase(userId));
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		return dtoList;
 	}
 }

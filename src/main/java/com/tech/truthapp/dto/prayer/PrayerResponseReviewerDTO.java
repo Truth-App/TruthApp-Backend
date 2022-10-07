@@ -1,6 +1,6 @@
-package com.tech.truthapp.model.prayer;
+package com.tech.truthapp.dto.prayer;
 
-import com.tech.truthapp.model.BaseModel;
+import com.tech.truthapp.dto.BaseDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class PrayerResponseReviewer extends BaseModel{
+public class PrayerResponseReviewerDTO extends BaseDTO{
 
 	String id;
 	String comments;	
