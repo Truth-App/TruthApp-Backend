@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class TruthappApplication {
 
 	/** The Constant SPRING_PROFILE_DEVELOPMENT. */
-	private static final String SPRING_PROFILE_DEVELOPMENT = "local";
+	private static final String SPRING_PROFILE_DEVELOPMENT = "dev";
 
 	/** The Constant SPRING_PROFILE_DEFAULT. */
 	private static final String SPRING_PROFILE_DEFAULT = "spring.profiles.default";
