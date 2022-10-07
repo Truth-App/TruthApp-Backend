@@ -52,6 +52,12 @@ public class QuestionService {
 		List<QuestionDTO> dtoList = questionMapper.toDto(userQuestionList);
 		return dtoList;
 	}
+	
+	public List<QuestionDTO> getReviewedQuestionsForCategory(String category) {
+		List<Question> userQuestionList = questionRepository.findByReviewedQuestionsForCategory(category);
+		List<QuestionDTO> dtoList = questionMapper.toDto(userQuestionList);
+		return dtoList;
+	}
 
 	public List<QuestionDTO> getReviewQuestions() {
 		List<Question> userQuestionList = questionRepository.findByReviewQuestions();
@@ -64,7 +70,7 @@ public class QuestionService {
 				
 		if (optionalQuestion.isPresent()) {
 			Question dbQuestion = optionalQuestion.get();
-			dbQuestion.setIsPublic(questionDTO.getIsPublic());
+			//dbQuestion.setIsPublic(questionDTO.getIsPublic());
 			if (questionDTO.getIsApproved()) {
 				dbQuestion.setIsApproved(Boolean.TRUE);
 				dbQuestion.setCategory(questionDTO.getCategory());
@@ -95,6 +101,7 @@ public class QuestionService {
 			Question dbQuestion = optionalQuestion.get();
 			QuestionResponse response = questionResponseMapper.toEntity(responseDTO);
 			response.setResponse(responseDTO.getResponse());
+			response.setResponderId("system");
 			response.setId(new ObjectId().toString());
 			response.setCreatedBy("system");
 			response.setCreatedAt(new Date());
@@ -154,5 +161,24 @@ public class QuestionService {
 			// throw exception
 		}
 		return null;
+	}
+	
+	public List<QuestionDTO> getReviewResponses() {
+		List<Question> userQuestionList = questionRepository.findByReviewResponses();
+		for (Question question : userQuestionList) {
+			question.getResponses().removeIf(object -> object.getIsApproved() && object.getScore() > 0);
+		}
+		List<QuestionDTO> dtoList = questionMapper.toDto(userQuestionList);
+		return dtoList;
+	}
+	
+	public List<QuestionDTO> getMyReviewedResponses(String userId) {
+		List<Question> userQuestionList = questionRepository.findByReviewedQuestions();
+		for (Question question : userQuestionList) {
+			question.getResponses().removeIf(object -> object.getResponderId() == null || 
+					!object.getResponderId().equalsIgnoreCase(userId));
+		}
+		List<QuestionDTO> dtoList = questionMapper.toDto(userQuestionList);
+		return dtoList;
 	}
 }

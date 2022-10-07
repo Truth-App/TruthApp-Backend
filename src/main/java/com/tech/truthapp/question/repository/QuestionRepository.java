@@ -22,8 +22,15 @@ public interface QuestionRepository extends  MongoRepository<Question, String>{
 	@Query("{ 'isPublic' : true, 'isApproved' : true }")
 	public List<Question> findByReviewedQuestions();
 	
+	@Query("{ 'isPublic' : true, 'isApproved' : true, 'category' : ?0 }")
+	public List<Question> findByReviewedQuestionsForCategory(String category);
+	
 	@Query("{ 'isApproved' : false, 'score' : {$gt : 0} }")
 	public List<Question> findByReviewQuestions();
+	
+	//'responses' : { $in : ['isApproved' : false]} }
+	@Query("{ 'responses.isApproved' : false, 'responses.score' : {$gt : 0} } } ")
+	public List<Question> findByReviewResponses();
 	
 	@Query("{ 'id' : ?0 }")
 	public List<Question> findByIdInQuestions(List<String> ids);
