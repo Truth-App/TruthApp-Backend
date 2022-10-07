@@ -14,6 +14,5 @@ public class PrayerReviewerDTO {
 	String id;
 	String comments;	
 	String reviewerId;
-	Integer score;
 	
 }

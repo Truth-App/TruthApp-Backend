@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tech.truthapp.dto.share.ShareDTO;
@@ -73,9 +74,7 @@ public class ShareController {
 
 		log.debug("REST request to get Shares By User Id {}", userId);
 		List<ShareDTO> userList = shareService.getAllSharesByUser(userId);
-		return ResponseEntity.created(new URI("/api/share/" + userId))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
-				.body(userList);
+		return ResponseEntity.ok().body(userList);
 	}
 	
 	/**
@@ -87,9 +86,7 @@ public class ShareController {
 	public ResponseEntity<List<ShareDTO>> getReviewShares() throws Exception {
 		log.debug("REST request to get Review Shares");
 		List<ShareDTO> list = shareService.getReviewShares();
-		return ResponseEntity.created(new URI("/api/share/reviewshare"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
-				.body(list);
+		return ResponseEntity.ok().body(list);
 	}
 
 	/**
@@ -102,9 +99,7 @@ public class ShareController {
 
 		log.debug("REST request to get Reviewed Shares");
 		List<ShareDTO> list = shareService.getReviewedShares();
-		return ResponseEntity.created(new URI("/api/share/reviewedshare"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
-				.body(list);
+		return ResponseEntity.ok().body(list);
 	}
 	
 	/**
@@ -148,9 +143,7 @@ public class ShareController {
 			@PathVariable("shareId") String shareId) throws Exception {
 		log.debug("REST request to get Get Response for Share {}", shareId);
 		List<ShareResponsesDTO> responses = shareService.getShareResponse(shareId);
-		return ResponseEntity.created(new URI("/api/share/responses"))
-				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, shareId))
-				.body(responses);
+		return ResponseEntity.ok().body(responses);
 	}
 
 	/**
@@ -180,10 +173,45 @@ public class ShareController {
 	public ResponseEntity<List<ShareDTO>> getAlShares() throws Exception {
 		log.debug("REST request to Get All Shares ");
 		List<ShareDTO> list = shareService.getAllSahres();
-		return ResponseEntity
-				.created(new URI("/api/share/")).headers(HeaderUtil
-						.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ENTITY_NAME))
-				.body(list);
+		return ResponseEntity.ok().body(list);
+	}
+	
+	/**
+	 * 
+	 * @return ShareDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/share/reviewresponses")
+	public ResponseEntity<List<ShareDTO>> getReviewResponses() throws Exception {
+		log.debug("REST request to get Review Share");
+		List<ShareDTO> list = shareService.getReviewResponses();
+		return ResponseEntity.ok().body(list);
+	}
+	
+	/**
+	 * 
+	 * @return prayerDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/share/categoryreviewedshare")
+	public ResponseEntity<List<ShareDTO>> getReviewedQuestionsForCategory
+				(@RequestParam(name = "category") String category) throws Exception {
+
+		log.debug("REST request to get Reviewed Share for category {} ", category);
+		List<ShareDTO> list = shareService.getReviewedShareForCategory(category);
+		return ResponseEntity.ok().body(list);
+	}
+	
+	/**
+	 * 
+	 * @return prayerDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/share/{userId}/myreviewedresponses")
+	public ResponseEntity<List<ShareDTO>> getMyReviewedResponses(@PathVariable("userId") String userId) throws Exception {
+		log.debug("REST request to get Review Prayers");
+		List<ShareDTO> list = shareService.getMyReviewedResponses(userId);
+		return ResponseEntity.ok().body(list);
 	}
 	
 }

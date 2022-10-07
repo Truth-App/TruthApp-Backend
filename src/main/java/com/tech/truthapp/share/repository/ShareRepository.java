@@ -24,4 +24,12 @@ public interface ShareRepository extends  MongoRepository<Share, String>{
 	@Query("{ 'id' : ?0 , 'score' : {$gt : 0}}")
 	public Optional<Share> findByShareForReview(String id);
 	
+	@Query("{ 'id' : ?0 , 'score' : {$gt : 0}}")
+	public Optional<Share> findByPrayerForReview(String id);
+	
+	@Query("{ 'responses.isApproved' : false, 'responses.score' : {$gt : 0} } } ")
+	public List<Share> findByReviewResponses();
+	
+	@Query("{ 'isPublic' : true, 'isApproved' : true, 'category' : ?0 }")
+	public List<Share> findByReviewedSharesForCategory(String category);
 }

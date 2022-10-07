@@ -14,6 +14,5 @@ public class PrayerReviewer {
 	String id;
 	String comments;	
 	String reviewerId;
-	Integer score;
 	
 }

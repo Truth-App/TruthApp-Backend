@@ -32,6 +32,8 @@ public class PrayerService {
 
 	public PrayerDTO savePrayer(PrayerDTO prayerDTO) {
 		Prayer prayer = prayerMapper.toEntity(prayerDTO);
+		prayer.setIsApproved(Boolean.FALSE);
+		prayer.setScore(2);
 		prayerRepository.save(prayer);
 		prayerDTO = prayerMapper.toDto(prayer);
 		return prayerDTO;
@@ -66,8 +68,7 @@ public class PrayerService {
 				
 		if (optionalPrayer.isPresent()) {
 			Prayer dbPrayer = optionalPrayer.get();
-			dbPrayer.setIsPublic(prayerDTO.getIsPublic());
-			if (dbPrayer.getIsApproved()) {
+			if (prayerDTO.getIsApproved()) {
 				dbPrayer.setIsApproved(Boolean.TRUE);
 				dbPrayer.setCategory(prayerDTO.getCategory());
 			} else {
@@ -97,6 +98,7 @@ public class PrayerService {
 			Prayer dbPrayer = optionalPrayer.get();
 			PrayerResponse response = new PrayerResponse();
 			response.setResponse(responseDTO.getResponse());
+			response.setResponderId("system");
 			response.setId(new ObjectId().toString());
 			response.setCreatedBy("system");
 			response.setCreatedAt(new Date());
@@ -148,6 +150,9 @@ public class PrayerService {
 				prayerRepository.save(dbPrayer);
 				PrayerDTO dtoObject = prayerMapper.toDto(dbPrayer);
 				return dtoObject;
+			} else {
+				System.out.println("Yes there is no responses");
+				
 			}
 			return null;
 		} else {
@@ -155,5 +160,29 @@ public class PrayerService {
 			// throw exception
 		}
 		return null;
+	}
+	public List<PrayerDTO> getReviewedPrayersForCategory(String category) {
+		List<Prayer> list = prayerRepository.findByReviewedPrayersForCategory(category);
+		List<PrayerDTO> dtoList = prayerMapper.toDto(list);
+		return dtoList;
+	}
+	
+	public List<PrayerDTO> getReviewResponses() {
+		List<Prayer> list = prayerRepository.findByReviewResponses();
+		for (Prayer prayer : list) {
+			prayer.getResponses().removeIf(object -> object.getIsApproved() && object.getScore() > 0);
+		}
+		List<PrayerDTO> dtoList = prayerMapper.toDto(list);
+		return dtoList;
+	}
+	
+	public List<PrayerDTO> getMyReviewedResponses(String userId) {
+		List<Prayer> list = prayerRepository.findByReviewedPrayers();
+		for (Prayer prayer : list) {
+			prayer.getResponses().removeIf(object -> object.getResponderId() == null || 
+					!object.getResponderId().equalsIgnoreCase(userId));
+		}
+		List<PrayerDTO> dtoList = prayerMapper.toDto(list);
+		return dtoList;
 	}
 }

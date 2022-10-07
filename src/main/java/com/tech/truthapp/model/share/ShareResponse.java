@@ -17,7 +17,8 @@ import lombok.ToString;
 public class ShareResponse extends BaseModel{
 
 	String id;
-	String response;	
+	String response;
+	String responderId;
 	String reviewerId;
 	Boolean isPublic;
 	Integer score;
