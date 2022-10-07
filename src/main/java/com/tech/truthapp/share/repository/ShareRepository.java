@@ -32,4 +32,7 @@ public interface ShareRepository extends  MongoRepository<Share, String>{
 	
 	@Query("{ 'isPublic' : true, 'isApproved' : true, 'category' : ?0 }")
 	public List<Share> findByReviewedSharesForCategory(String category);
+	
+	@Query("{ 'isPublic' : true, 'isApproved' : true, 'responses.0' { $exists : true } }")
+	public List<Share> findByMyReviewedShares();
 }

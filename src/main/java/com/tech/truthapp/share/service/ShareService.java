@@ -175,7 +175,7 @@ public class ShareService {
 	}
 	
 	public List<ShareDTO> getMyReviewedResponses(String userId) {
-		List<Share> list = shareRepository.findByReviewedShares();
+		List<Share> list = shareRepository.findByMyReviewedShares();
 		for (Share share : list) {
 			share.getResponses().removeIf(object -> object.getResponderId() == null || 
 					!object.getResponderId().equalsIgnoreCase(userId));

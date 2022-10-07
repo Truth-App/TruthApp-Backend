@@ -29,4 +29,8 @@ public interface PrayerRepository extends  MongoRepository<Prayer, String>{
 	
 	@Query("{ 'isPublic' : true, 'isApproved' : true, 'category' : ?0 }")
 	public List<Prayer> findByReviewedPrayersForCategory(String category);
+	
+	@Query("{ 'isPublic' : true, 'isApproved' : true, 'responses.0' : { $exists : true } }")
+	public List<Prayer> findByMyReviewedPrayers();
+	
 }

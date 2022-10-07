@@ -34,3 +34,4 @@ build/
 target/classes/META-INF/maven/com.tech/truthapp/pom.properties
 target/classes/META-INF/maven/com.tech/truthapp/pom.properties
 *.properties
+*.properties
