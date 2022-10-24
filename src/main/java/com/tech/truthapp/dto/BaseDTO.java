@@ -17,6 +17,6 @@ public class BaseDTO {
 	protected String createdBy;	
 	protected Date updatedAt;
 	protected String lastModifiedBy;
-	protected Integer version;
+	protected Long version;
 	
 }

@@ -1,5 +1,7 @@
 package com.tech.truthapp.dto.prayer;
 
+import com.tech.truthapp.dto.BaseDTO;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,7 +11,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class PrayerReviewerDTO {
+public class PrayerReviewerDTO extends BaseDTO{
 
 	String id;
 	String comments;	

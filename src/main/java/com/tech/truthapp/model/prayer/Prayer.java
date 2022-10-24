@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import com.tech.truthapp.model.BaseModel;
 
@@ -12,7 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document(collection = "prayers")
+@Document(indexName = "prayers")
 @Setter
 @Getter
 @NoArgsConstructor
@@ -23,10 +25,12 @@ public class Prayer extends BaseModel{
 	String prayer;
 	String prayerType;	
 	String category;
-	Integer score;
+	Long score;
 	Boolean isPublic;
 	Boolean isApproved;
 	
+	@Field(type = FieldType.Nested)
 	List<PrayerResponse> responses = new ArrayList<PrayerResponse>();
+	@Field(type = FieldType.Nested)
 	List<PrayerReviewer> reviews = new ArrayList<PrayerReviewer>();
 }

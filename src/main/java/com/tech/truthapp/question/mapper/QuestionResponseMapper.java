@@ -5,9 +5,9 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import com.tech.truthapp.dto.QuestionResponsesDTO;
+import com.tech.truthapp.dto.question.QuestionResponsesDTO;
 import com.tech.truthapp.mapper.EntityMapper;
-import com.tech.truthapp.model.QuestionResponse;
+import com.tech.truthapp.model.question.QuestionResponse;
 
 @Mapper(componentModel = "spring", uses = {}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface QuestionResponseMapper extends EntityMapper<QuestionResponsesDTO, QuestionResponse>{

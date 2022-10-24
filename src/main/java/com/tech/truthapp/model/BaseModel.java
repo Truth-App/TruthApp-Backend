@@ -15,6 +15,7 @@ import lombok.Setter;
 @Setter
 public class BaseModel {
 
+	
 	@CreatedDate
 	protected Date createdAt;
 	@CreatedBy
@@ -25,6 +26,7 @@ public class BaseModel {
 	@LastModifiedBy
 	protected String lastModifiedBy;
 	@Version
-	protected Integer version;
+	protected Long version;
+	
 	
 }

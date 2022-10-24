@@ -16,6 +16,6 @@ public class ShareResponseReviewer extends BaseModel{
 	String id;
 	String comments;	
 	String reviewerId;
-	Integer score;
+	
 	
 }

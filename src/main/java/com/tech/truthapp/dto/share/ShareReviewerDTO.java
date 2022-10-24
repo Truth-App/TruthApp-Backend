@@ -14,6 +14,5 @@ public class ShareReviewerDTO {
 	String id;
 	String comments;	
 	String reviewerId;
-	Integer score;
 	
 }

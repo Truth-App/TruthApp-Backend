@@ -1,17 +1,17 @@
 package com.tech.truthapp.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document
+@Document(indexName = "otp")
 @Setter
 @Getter
 @NoArgsConstructor
-public class OtpAuthentication extends BaseModel{
+public class OtpAuthentication {
 
 	@Id
 	String otpRequestId;
