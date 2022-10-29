@@ -14,7 +14,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class ShareResponse extends BaseModel{
+public class ShareResponse  extends BaseModel{
 
 	String id;
 	String response;

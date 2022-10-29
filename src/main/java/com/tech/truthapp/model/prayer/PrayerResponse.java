@@ -20,7 +20,7 @@ public class PrayerResponse extends BaseModel{
 	String response;
 	String responderId;
 	Boolean isPublic;
-	Integer score;
+	Long score;
 	Boolean isApproved;
 	List<PrayerResponseReviewer> reviews = new ArrayList<PrayerResponseReviewer>();
 }

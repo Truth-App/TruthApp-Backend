@@ -2,17 +2,17 @@ package com.tech.truthapp.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document(collection = "users")
+@Document(indexName = "users")
 @Setter
 @Getter
 @NoArgsConstructor
-public class User extends BaseModel{
+public class User {
 
 	@Transient
     public static final String SEQUENCE_NAME = "user_sequence";

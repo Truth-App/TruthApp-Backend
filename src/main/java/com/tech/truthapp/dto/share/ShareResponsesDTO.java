@@ -24,6 +24,5 @@ public class ShareResponsesDTO extends BaseDTO{
 	Boolean isApproved;
 	String comments;
 	String reviewerId;
-	
 	List<ShareResponseReviewerDTO> reviews = new ArrayList<ShareResponseReviewerDTO>();
 }

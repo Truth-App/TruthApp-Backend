@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tech.truthapp.config.MessageSourceComponent;
-import com.tech.truthapp.dto.QuestionDTO;
+import com.tech.truthapp.dto.question.QuestionDTO;
 import com.tech.truthapp.exception.BadRequestException;
 
 @Component
@@ -24,4 +24,5 @@ public class QuestionValidator {
 			throw new BadRequestException(errorMsg, ENTITY_NAME, "nullValue");
 		}
 	}
+
 }

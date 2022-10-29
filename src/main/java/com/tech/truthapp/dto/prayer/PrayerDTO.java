@@ -17,8 +17,9 @@ public class PrayerDTO extends BaseDTO{
 
 	String id;
 	String prayer;
-	String prayerType;
-	String category;	
+	String category;
+	String subCategory;
+	String group;
 	Boolean isPublic;
 	Boolean isApproved;
 	Integer score;

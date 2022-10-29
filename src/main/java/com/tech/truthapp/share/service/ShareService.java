@@ -1,186 +1,495 @@
 package com.tech.truthapp.share.service;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.tech.truthapp.audit.share.ShareAuditService;
+import com.tech.truthapp.audit.share.ShareReviewAuditService;
 import com.tech.truthapp.dto.share.ShareDTO;
-import com.tech.truthapp.dto.share.ShareResponsesDTO;
 import com.tech.truthapp.model.share.Share;
-import com.tech.truthapp.model.share.ShareResponse;
-import com.tech.truthapp.model.share.ShareResponseReviewer;
 import com.tech.truthapp.model.share.ShareReviewer;
 import com.tech.truthapp.share.mapper.ShareMapper;
-import com.tech.truthapp.share.repository.ShareRepository;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.json.JsonData;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Transactional
+@Slf4j
 public class ShareService {
 
 	@Autowired
-	private ShareRepository shareRepository;
+	private ElasticsearchClient elasticsearchClient;
+
+	private final String indexName = "share";
+	
+	@Autowired
+	private ShareAuditService shareAuditService;
 
 	@Autowired
 	private ShareMapper shareMapper;
-
 	
-
-	public ShareDTO saveShare(ShareDTO shareDTO) {
-		Share share = shareMapper.toEntity(shareDTO);
+	@Autowired
+	private ShareReviewAuditService shareReviewAuditService;
+	
+	/**
+	 * 
+	 * @param shareDTO
+	 * @return
+	 * @throws Exception
+	 */
+	public ShareDTO saveShare(ShareDTO shareDTO) throws Exception {
+		Share share  = shareMapper.toEntity(shareDTO);
+		share.setIsPublic(Boolean.TRUE);
 		share.setIsApproved(Boolean.FALSE);
-		share.setScore(2);
-		shareRepository.save(share);
+		share.setScore(2L);
+		share.setId(UUID.randomUUID().toString());
+		shareAuditService.updateAuditOnCreate(share);
+		IndexResponse response = elasticsearchClient
+				.index(i -> i.index(indexName).id(share.getId()).document(share));
+		if (response.result().name().equals("Created")) {
+			log.info("Successfully Created");
+		} else {
+			throw new Exception("Exception here");
+		}
 		shareDTO = shareMapper.toDto(share);
 		return shareDTO;
 	}
+	
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<ShareDTO> getReviewedShares() throws Exception {
+		Boolean isPublic = true;
+		Boolean isApproved = true;
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		
 
-	public List<ShareDTO> getAllSahres() {		
-		List<Share> shareList = shareRepository.findAll();
-		List<ShareDTO> list = shareMapper.toDto(shareList);
-		return list;
+		 // Combine isPublic and isApproved queries to search the share index
+        SearchResponse<Share> response = elasticsearchClient.search(s -> s
+            .index(indexName)
+            .query(q -> q
+                .bool(b -> b 
+                    .must(isPublicQuery, isApprovedQuery)
+                )
+            ),
+            Share.class
+        );
+		
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
+		return dtoList;
 	}
 	
-	public List<ShareDTO> getAllSharesByUser(String userId) {
-		List<Share> list = shareRepository.findByShareByUserId(userId);
-		List<ShareDTO> dtoList = shareMapper.toDto(list);
-		return dtoList;
-	}
+	public List<ShareDTO> getReviewShares() throws Exception {
+		Integer maxScore = 0;
+		Boolean isApproved = false;
+		Query scoreQuery = RangeQuery.of(r -> r 
+				.field("score").gt(JsonData.of(maxScore)))._toQuery();
+		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		
 
-	public List<ShareDTO> getReviewedShares() {
-		List<Share> list = shareRepository.findByReviewedShares();
-		List<ShareDTO> dtoList = shareMapper.toDto(list);
-		return dtoList;
-	}
-
-	public List<ShareDTO> getReviewShares() {
-		List<Share> list = shareRepository.findByReviewShare();
-		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		 // Combine isPublic and isApproved queries to search the share index
+        SearchResponse<Share> response = elasticsearchClient.search(s -> s
+            .index(indexName)
+            .query(q -> q
+                .bool(b -> b 
+                    .must(scoreQuery) 
+                    .must(isApprovedQuery)
+                )
+            ),
+            Share.class
+        );
+		
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
 		return dtoList;
 	}
 	
-	public ShareDTO reviewShare(String userId, ShareDTO shareDTO) {
-		Optional<Share> optionalObject = shareRepository.findByShareForReview(shareDTO.getId());
-				
-		if (optionalObject.isPresent()) {
-			Share dbShare = optionalObject.get();			
-			if (shareDTO.getIsApproved()) {
-				dbShare.setIsApproved(Boolean.TRUE);
-				dbShare.setCategory(shareDTO.getCategory());
-			} else {
-				dbShare.setIsApproved(Boolean.FALSE);
-				Integer score = dbShare.getScore();
-				score = score - 1;
-				dbShare.setScore(score);
-			}
-			ShareReviewer reviewer = new ShareReviewer();
-			reviewer.setReviewerId(userId);
-			reviewer.setComments(userId);
-			reviewer.setId(new ObjectId().toString());
-			dbShare.getReviews().add(reviewer);
-			shareRepository.save(dbShare);
-			ShareDTO dtoObject = shareMapper.toDto(dbShare);
-			return dtoObject;
+	public ShareDTO validateShare(String userId, ShareDTO shareDTO) throws Exception {
+		String id = shareDTO.getId();
+		Query idQuery = MatchQuery.of(m -> m 
+				.field("id").query(id))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idQuery) 
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for share id " + shareDTO.getId());
+		}
+		Hit<Share> hitObject = hits.get(0);
+		Share share = hitObject.source();
+		if (shareDTO.getIsApproved()) {
+			share.setIsApproved(Boolean.TRUE);
 		} else {
-			System.out.println("Yes in side else condition");
-			// throw exception
+			share.setIsApproved(Boolean.FALSE);
+			Long score = share.getScore();
+			score = score - 1L;
+			share.setScore(score);
 		}
-		return null;
+		share.setGroup(shareDTO.getGroup());
+		ShareReviewer reviewer = new ShareReviewer();
+		reviewer.setReviewerId(userId);
+		reviewer.setComments(userId);
+		reviewer.setId(UUID.randomUUID().toString());
+		shareReviewAuditService.updateAuditOnCreate(reviewer);
+		share.getReviews().add(reviewer);
+		shareAuditService.updateAuditOnUpdate(share);
+		
+		IndexResponse indexResponse = elasticsearchClient
+				.index(i -> i.index(indexName).id(share.getId()).document(share));
+		if (indexResponse.result().name().equals("Updated")) {
+			log.info("Successfully Updated");
+		} else {
+			throw new Exception("Exception here");
+		}		
+		shareDTO = shareMapper.toDto(share);
+		return shareDTO;
 	}
 	
-	public ShareDTO createResponse(String shareId, ShareResponsesDTO responseDTO) {
-		Optional<Share> optionalObject = shareRepository.findById(shareId);
-		if (optionalObject.isPresent()) {
-			Share dbObject = optionalObject.get();
-			ShareResponse response = new ShareResponse();
-			response.setResponse(responseDTO.getResponse());
-			response.setId(new ObjectId().toString());
-			response.setCreatedBy("system");
-			response.setCreatedAt(new Date());
-			response.setIsApproved(Boolean.FALSE);
-			response.setScore(2);
-			response.setLastModifiedBy("system");
-			response.setUpdatedAt(new Date());
-			dbObject.getResponses().add(response);
-			shareRepository.save(dbObject);
-			ShareDTO dtoObject = shareMapper.toDto(dbObject);
-			return dtoObject;
-		} else {
-			// throw exception
+	public List<ShareDTO> getAllSharesByUser(String userId) throws Exception {
+		Integer maxScore = 0;
+		Query scoreQuery = RangeQuery.of(r -> r 
+				.field("score").gt(JsonData.of(maxScore)))._toQuery();	
+		Query userIdQuery = MatchQuery.of(m -> m 
+				.field("createdBy").query(userId))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(userIdQuery) 
+	                    .must(scoreQuery)
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
 		}
-		return null;
-	}
-	
-	public List<ShareResponsesDTO> getShareResponse(String shareId) {
-		Optional<Share> optionalObject = shareRepository.findById(shareId);
-		if (optionalObject.isPresent()) {
-			Share dbObject = optionalObject.get();
-			ShareDTO dtoObject = shareMapper.toDto(dbObject);
-			return dtoObject.getResponses();
-		} else {
-			// throw exception
-		}
-		return null;
-	}
-
-	public ShareDTO validateResponse(String shareId, ShareResponsesDTO responseDTO) {
-		Optional<Share> optionalObject = shareRepository.findById(shareId);
-		if (optionalObject.isPresent()) {
-			Share dbObjct = optionalObject.get();
-			List<ShareResponse> responses = dbObjct.getResponses();
-
-			Optional<ShareResponse> matchingObject = responses.stream()
-					.filter(object -> object.getId() != null && object.getId().equalsIgnoreCase(responseDTO.getId()))
-					.findFirst();
-
-			if (matchingObject.isPresent()) {
-				ShareResponse responseObject = matchingObject.get();
-				responseObject.setIsApproved(Boolean.TRUE);
-				List<ShareResponseReviewer> reviewerList = responseObject.getReviews();
-				ShareResponseReviewer reviewer = new ShareResponseReviewer();
-				reviewer.setId(new ObjectId().toString());
-				reviewer.setComments(responseDTO.getComments());
-				reviewer.setReviewerId(responseDTO.getReviewerId());
-				reviewerList.add(reviewer);				
-				shareRepository.save(dbObjct);
-				ShareDTO dtoObject = shareMapper.toDto(dbObjct);
-				return dtoObject;
-			}
-			return null;
-		} else {
-			System.out.println("Else block here");
-			// throw exception
-		}
-		return null;
-	}
-	
-	public List<ShareDTO> getReviewedShareForCategory(String category) {
-		List<Share> list = shareRepository.findByReviewedSharesForCategory(category);
-		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
 		return dtoList;
 	}
 	
-	public List<ShareDTO> getReviewResponses() {
-		List<Share> list = shareRepository.findByReviewResponses();
-		for (Share share : list) {
-			share.getResponses().removeIf(object -> object.getIsApproved() && object.getScore() > 0);
+	public List<ShareDTO> getReviewedSharesByCategory(String category) throws Exception {
+		Boolean isApproved = true;
+		Boolean isPublic = true;		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query categoryQuery = MatchQuery.of(m -> m 
+				.field("category").query(category))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(categoryQuery)
+	                    .must(isApprovedQuery) 
+	                    .must(isPublicQuery) 
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
 		}
-		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
+		return dtoList;
+	}
+
+	public List<ShareDTO> getReviewedSharesByCategoryAndSubCategory(String category, String subCategory) throws Exception {
+		Boolean isApproved = true;
+		Boolean isPublic = true;		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query categoryQuery = MatchQuery.of(m -> m 
+				.field("category").query(category))._toQuery();
+		
+		Query subcategoryQuery = MatchQuery.of(m -> m 
+				.field("subCategory").query(subCategory))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(categoryQuery)
+	                    .must(subcategoryQuery)
+	                    .must(isApprovedQuery) 
+	                    .must(isPublicQuery) 
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
 		return dtoList;
 	}
 	
-	public List<ShareDTO> getMyReviewedResponses(String userId) {
-		List<Share> list = shareRepository.findByMyReviewedShares();
-		for (Share share : list) {
-			share.getResponses().removeIf(object -> object.getResponderId() == null || 
-					!object.getResponderId().equalsIgnoreCase(userId));
+	public List<ShareDTO> getReviewedSharesByGroup(String group) throws Exception {
+		Boolean isApproved = true;
+		Boolean isPublic = true;		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query groupQuery = MatchQuery.of(m -> m 
+				.field("group").query(group))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(groupQuery)
+	                    .must(isApprovedQuery) 
+	                    .must(isPublicQuery) 
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
 		}
-		List<ShareDTO> dtoList = shareMapper.toDto(list);
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
+		return dtoList;
+	}
+	
+	public List<ShareDTO> search(String keyword) throws Exception {
+		Integer maxScore = 0;
+		Boolean isPublic = true;
+		Query scoreQuery = RangeQuery.of(r -> r 
+				.field("score").gt(JsonData.of(maxScore)))._toQuery();	
+		
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query searchQuery = MatchQuery.of(m -> m 
+				.field("search_field")
+				.query(keyword))._toQuery();
+		
+        SearchResponse<Share> response = elasticsearchClient.search(s -> s
+            .index(indexName)
+            .query(q -> q
+	                .bool(b -> b 
+		                    .must(searchQuery)
+		                    .must(isPublicQuery)
+		                    .must(scoreQuery)
+		                )
+		            ),
+            Share.class
+        );
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
+		return dtoList;
+	}
+	
+	
+	public ShareDTO updateShare(String shareId, ShareDTO shareDTO) throws Exception {
+		Integer maxScore = 0;
+		Query scoreQuery = RangeQuery.of(r -> r 
+				.field("score").gt(JsonData.of(maxScore)))._toQuery();
+		Query idQuery = MatchQuery.of(m -> m 
+				.field("id").query(shareId))._toQuery();		
+		 Boolean isApproved = false;
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+					.field("isApproved").query(isApproved))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idQuery)
+	                    .must(isApprovedQuery)
+	                    .must(scoreQuery)
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for share id " + shareId);
+		}
+		Hit<Share> hitObject = hits.get(0);
+		Share dbShare = hitObject.source();
+		dbShare.setShare(shareDTO.getShare());
+		dbShare.setShareType(shareDTO.getShareType());
+		dbShare.setCategory(shareDTO.getCategory());
+		dbShare.setSubCategory(shareDTO.getSubCategory());
+		shareAuditService.updateAuditOnUpdate(dbShare);
+		IndexResponse indexResponse = elasticsearchClient
+				.index(i -> i.index(indexName).id(dbShare.getId()).document(dbShare));
+		if (indexResponse.result().name().equals("Updated")) {
+			log.info("Successfully Updated Object");
+		} else {
+			throw new Exception("Exception here");
+		}		
+		ShareDTO dtoObject = shareMapper.toDto(dbShare);
+		return dtoObject;
+	}
+	
+	public ShareDTO deleteShare(String shareId) throws Exception {
+		Query idQuery = MatchQuery.of(m -> m 
+				.field("id").query(shareId))._toQuery();		
+		 Boolean isApproved = false;
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+					.field("isApproved").query(isApproved))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idQuery)
+	                    .must(isApprovedQuery)
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for share id " + shareId);
+		}
+		Hit<Share> hitObject = hits.get(0);
+		Share dbshare = hitObject.source();
+		dbshare.setScore(-1L);
+		shareAuditService.updateAuditOnUpdate(dbshare);
+		IndexResponse indexResponse = elasticsearchClient
+				.index(i -> i.index(indexName).id(dbshare.getId()).document(dbshare));
+		if (indexResponse.result().name().equals("Updated")) {
+			log.info("Successfully Updated Object");
+		} else {
+			throw new Exception("Exception here");
+		}		
+		ShareDTO dtoObject = shareMapper.toDto(dbshare);
+		return dtoObject;
+	}
+	
+	
+	public ShareDTO updateStatus(String shareId) throws Exception {
+		Query idQuery = MatchQuery.of(m -> m 
+				.field("id").query(shareId))._toQuery();		
+		 Boolean isApproved = false;
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+					.field("isApproved").query(isApproved))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idQuery)
+	                    .must(isApprovedQuery)
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for share id " + shareId);
+		}
+		Hit<Share> hitObject = hits.get(0);
+		Share dbShare = hitObject.source();
+		dbShare.setStatus("CLOSED");
+		shareAuditService.updateAuditOnUpdate(dbShare);
+		IndexResponse indexResponse = elasticsearchClient
+				.index(i -> i.index(indexName).id(dbShare.getId()).document(dbShare));
+		if (indexResponse.result().name().equals("Updated")) {
+			log.info("Successfully Updated Object");
+		} else {
+			throw new Exception("Exception here");
+		}		
+		ShareDTO dtoObject = shareMapper.toDto(dbShare);
+		return dtoObject;
+	}
+	
+	
+	public List<ShareDTO> getReviewedSharesByShareType(String shareType) throws Exception {
+		Boolean isApproved = true;
+		Boolean isPublic = true;		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query groupQuery = MatchQuery.of(m -> m 
+				.field("shareType").query(shareType))._toQuery();
+		
+		SearchResponse<Share> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(groupQuery)
+	                    .must(isApprovedQuery) 
+	                    .must(isPublicQuery) 
+	                )
+	            ),
+	            Share.class
+	        );
+		List<Hit<Share>> hits = response.hits().hits();
+		List<Share> dbList = new ArrayList<>();
+		for (Hit<Share> hit : hits) {
+			Share share = hit.source();
+			dbList.add(share);
+		}
+		List<ShareDTO> dtoList = shareMapper.toDto(dbList);
 		return dtoList;
 	}
 }

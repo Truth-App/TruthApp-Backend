@@ -1,0 +1,82 @@
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "autocomplete_filter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "autocomplete": { 
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "autocomplete_filter"
+          ]
+        }
+      }
+    }
+  },
+    "mappings": {
+      "properties": {
+        "search_field":{
+          "type": "text",
+          "analyzer": "autocomplete", 
+          "search_analyzer": "standard"
+        },
+        "id":{
+        	"type": "text"
+        },
+        "category":{
+          "type": "text"
+        },
+        "createdAt":{
+         "type": "date"
+        },
+        "updatedAt":{
+         "type": "date"
+        },
+        "createdBy":{
+         "type": "text"
+        },
+        "lastModifiedBy":{
+         "type": "text"
+        },
+        "version":{
+         "type": "long"
+        },        
+        "subCategoryList":{
+          "type": "nested",
+          "properties": {
+            "id":{
+              "type": "text"
+            },
+            "categoryId":{
+              "type": "text"
+            },
+            "subCategory":{
+             "type": "text"
+            },
+            "createdAt":{
+             "type": "date"
+            },
+            "updatedAt":{
+             "type": "date"
+            },
+            "createdBy":{
+             "type": "text"
+            },
+            "lastModifiedBy":{
+             "type": "text"
+            },
+            "version":{
+             "type": "long"
+            }
+          }
+        }
+      }  
+    }
+}

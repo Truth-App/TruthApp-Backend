@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,7 +44,7 @@ public class PrayerController {
 
 	@Autowired
 	private PrayerService prayerService;
-
+	
 	/**
 	 * 
 	 * @param prayerDTO
@@ -111,7 +112,7 @@ public class PrayerController {
 	public ResponseEntity<PrayerDTO> reviewPrayers(@PathVariable("userId") String userId,
 			@Valid @RequestBody PrayerDTO prayerDTO) throws Exception {
 		log.debug("REST request to get Validate Prayer {},{}", userId, prayerDTO);
-		PrayerDTO updateObject = prayerService.reviewPrayer(userId, prayerDTO);
+		PrayerDTO updateObject = prayerService.validatePrayer(userId, prayerDTO);
 		return ResponseEntity.created(new URI("/api/prayers/validateprayer"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))
 				.body(updateObject);
@@ -127,7 +128,7 @@ public class PrayerController {
 	public ResponseEntity<PrayerDTO> createResponse(@PathVariable("prayerId") String prayerId,
 			@Valid @RequestBody PrayerResponsesDTO responseDTO) throws Exception {
 		log.debug("REST request to get create Response for Prayer {},{}", prayerId, responseDTO);
-		PrayerDTO updateObject = prayerService.createResponse(prayerId, responseDTO);
+		PrayerDTO updateObject = prayerService.createPrayerResponse(prayerId, responseDTO);
 		return ResponseEntity.created(new URI("/api/prayers/responses"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, prayerId))
 				.body(updateObject);
@@ -185,8 +186,8 @@ public class PrayerController {
 	@GetMapping("/prayers/reviewresponses")
 	public ResponseEntity<List<PrayerDTO>> getReviewResponses() throws Exception {
 		log.debug("REST request to get Review Prayers");
-		List<PrayerDTO> userQuestionList = prayerService.getReviewResponses();
-		return ResponseEntity.ok().body(userQuestionList);
+		List<PrayerDTO> userList = prayerService.getReviewResponses();
+		return ResponseEntity.ok().body(userList);
 	}
 	
 	/**
@@ -195,11 +196,30 @@ public class PrayerController {
 	 * @throws Exception
 	 */
 	@GetMapping("/prayers/categoryreviewedprayers")
-	public ResponseEntity<List<PrayerDTO>> getReviewedQuestionsForCategory
+	public ResponseEntity<List<PrayerDTO>> getReviewedPrayerByCategory
 				(@RequestParam(name = "category") String category) throws Exception {
 
 		log.debug("REST request to get Reviewed Prayers for category {} ", category);
 		List<PrayerDTO> list = prayerService.getReviewedPrayersForCategory(category);
+		return ResponseEntity.ok().body(list);
+	}
+	
+	@GetMapping("/prayers/categorysubcategoryreviewedprayers")
+	public ResponseEntity<List<PrayerDTO>> getReviewedQuestionsByCategoryAndSubCategory
+				(@RequestParam(name = "category") String category, 
+				@RequestParam(name = "subcategory") String subCategory) throws Exception {
+
+		log.debug("REST request to get Reviewed Prayers for category {} ", category);
+		List<PrayerDTO> list = prayerService.getReviewedPrayersByCategoryAndSubCategory(category, subCategory);
+		return ResponseEntity.ok().body(list);
+	}
+	
+	@GetMapping("/prayers/groupeviewedprayers")
+	public ResponseEntity<List<PrayerDTO>> getReviewedQuestionsByGroup
+				(@RequestParam(name = "group") String group) throws Exception {
+
+		log.debug("REST request to get Reviewed Prayers for group {} ", group);
+		List<PrayerDTO> list = prayerService.getReviewedPrayersByGroup(group);
 		return ResponseEntity.ok().body(list);
 	}
 	
@@ -211,8 +231,67 @@ public class PrayerController {
 	@GetMapping("/prayers/{userId}/myreviewedresponses")
 	public ResponseEntity<List<PrayerDTO>> getMyReviewedResponses(@PathVariable("userId") String userId) throws Exception {
 		log.debug("REST request to get Review Prayers");
-		List<PrayerDTO> list = prayerService.getMyReviewedResponses(userId);
+		List<PrayerDTO> list = prayerService.getMyOutbox(userId);
 		return ResponseEntity.ok().body(list);
 	}
 	
+	/**
+	 * 
+	 * @param keyword
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping("/prayers/search")
+	public ResponseEntity<List<PrayerDTO>> search(@RequestParam(name = "keyword", required = false) String keyword) throws Exception {
+		log.debug("REST request to get Search Prayers {} ", keyword);
+		List<PrayerDTO> userSearchList = prayerService.search(keyword);
+		return ResponseEntity.ok().body(userSearchList);
+	}
+	
+	/**
+	 * 
+	 * @param prayerId
+	 * @return
+	 * @throws Exception
+	 */
+	@DeleteMapping("/prayers/{prayerId}")
+	public ResponseEntity<Void> deletePrayer(
+			@PathVariable("prayerId") String prayerId) throws Exception {
+		log.debug("REST request to get Delete Prayer {}", prayerId);
+		prayerService.deletePrayer(prayerId);
+		return ResponseEntity.ok().build();
+	}
+	
+	/**
+	 * 
+	 * @param prayerId
+	 * @param prayerDTO
+	 * @return
+	 * @throws Exception
+	 */
+	@PutMapping("/prayers/{prayerId}")
+	public ResponseEntity<PrayerDTO> updatePrayer(@PathVariable("prayerId") String prayerId,
+			@Valid @RequestBody PrayerDTO prayerDTO) throws Exception {
+		log.debug("REST request to get update Prayer {},{}", prayerId, prayerDTO);
+		prayerDTO.setId(prayerId);
+		prayerDTO = prayerService.updatePrayer(prayerId, prayerDTO);
+		return ResponseEntity.created(new URI("/api/prayers/" + prayerId))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, prayerId))
+				.body(prayerDTO);
+	}
+	
+	/***
+	 * 
+	 * @param prayerId
+	 * @return
+	 * @throws Exception
+	 */
+	@PutMapping("/prayers/{prayerId}/updatestatus")
+	public ResponseEntity<PrayerDTO> updateStatus(@PathVariable("prayerId") String prayerId) throws Exception {
+		log.debug("REST request to get update prayer  status {}", prayerId);
+		PrayerDTO prayerDTO = prayerService.updateStatus(prayerId);
+		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, prayerId))
+				.body(prayerDTO);
+	}
 }
