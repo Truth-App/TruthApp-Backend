@@ -17,8 +17,9 @@ public class QuestionDTO extends BaseDTO{
 
 	String id;
 	String question;
-	String questionType;
-	String category;	
+	String category;
+	String subCategory;
+	String group;
 	Boolean isPublic;
 	Boolean isApproved;
 	Integer score;

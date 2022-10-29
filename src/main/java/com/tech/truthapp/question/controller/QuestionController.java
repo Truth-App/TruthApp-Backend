@@ -141,6 +141,37 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
+	@GetMapping("/questions/categorysubcategoryreviewedquestions")
+	public ResponseEntity<List<QuestionDTO>> getReviewedQuestionsByCategoryAndSubCategory
+				(@RequestParam(name = "category") String category, 
+				@RequestParam(name = "subcategory") String subCategory) throws Exception {
+
+		log.debug("REST request to get Reviewed Questions for category {} ", category);
+		List<QuestionDTO> userQuestionList = questionService.getReviewedQuestionsByCategoryAndSubCategory(category, subCategory);
+		return ResponseEntity.ok().body(userQuestionList);
+	}
+	
+	/**
+	 * 
+	 * @param questionDTO
+	 * @return questionDTO
+	 * @throws Exception
+	 */
+	@GetMapping("/questions/groupeviewedquestions")
+	public ResponseEntity<List<QuestionDTO>> getReviewedQuestionsByGroup
+				(@RequestParam(name = "group") String group) throws Exception {
+
+		log.debug("REST request to get Reviewed Questions for group {} ", group);
+		List<QuestionDTO> userQuestionList = questionService.getReviewedQuestionsByGroup(group);
+		return ResponseEntity.ok().body(userQuestionList);
+	}
+	
+	/**
+	 * 
+	 * @param questionDTO
+	 * @return questionDTO
+	 * @throws Exception
+	 */
 	@PostMapping("/questions/{questionId}/responses")
 	public ResponseEntity<QuestionDTO> createResponse(@PathVariable("questionId") String questionId,
 			@Valid @RequestBody QuestionResponsesDTO responseDTO) throws Exception {
@@ -224,11 +255,22 @@ public class QuestionController {
 	 * @throws Exception
 	 */
 	@DeleteMapping("/questions/{questionId}")
-	public ResponseEntity<Void> deleteQuestion(
+	public ResponseEntity<QuestionDTO> deleteQuestion(
 			@PathVariable("questionId") String questionId) throws Exception {
 		log.debug("REST request to get Delete Question {}", questionId);
-		questionService.deleteQuestion(questionId);
-		return ResponseEntity.ok().build();
+		QuestionDTO questionDTO = questionService.deleteQuestion(questionId);
+		return ResponseEntity.ok().body(questionDTO);
 	}
 	
+	
+	@PutMapping("/questions/{questionId}")
+	public ResponseEntity<QuestionDTO> updateQuestion(@PathVariable("questionId") String questionId,
+			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
+		log.debug("REST request to get update Question {},{}", questionId, questionDTO);
+		questionDTO.setId(questionId);
+		QuestionDTO updateObject = questionService.updateQuestion(questionId, questionDTO);
+		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
+				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
+				.body(updateObject);
+	}
 }

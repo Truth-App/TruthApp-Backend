@@ -1,4 +1,4 @@
-package com.tech.truthapp.dto.share;
+package com.tech.truthapp.dto.category;
 
 import com.tech.truthapp.dto.BaseDTO;
 
@@ -11,10 +11,9 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class ShareReviewerDTO extends BaseDTO{
+public class SubCategoryDTO extends BaseDTO{
 
-	String id;
-	String comments;	
-	String reviewerId;
-	
+	private String id;
+	private String categoryId;
+	private String subCategory;
 }

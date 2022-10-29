@@ -30,19 +30,19 @@
         "id":{
         "type": "text"
         },
-        "question":{
+        "prayer":{
          "type": "text",
          "analyzer": "autocomplete", 
          "search_analyzer": "standard",
          "copy_to": "search_field"
         },
-        "questionType":{
-          "type": "text"
-        },
         "category":{
           "type": "text"
         },
         "subCategory":{
+          "type": "text"
+        },
+         "status":{
           "type": "text"
         },
          "group":{

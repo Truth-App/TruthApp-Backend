@@ -30,14 +30,14 @@
         "id":{
         "type": "text"
         },
-        "question":{
+        "share":{
          "type": "text",
          "analyzer": "autocomplete", 
          "search_analyzer": "standard",
          "copy_to": "search_field"
         },
-        "questionType":{
-          "type": "text"
+        "shareType":{
+         "type": "text" 
         },
         "category":{
           "type": "text"
@@ -68,42 +68,7 @@
         },
         "version":{
          "type": "long"
-        },   
-        "responses":{
-          "type": "nested",
-          "properties": {
-            "id":{
-              "type": "text"
-            },
-            "response":{
-              "type": "text"
-            },
-            "responderId":{
-             "type": "text"
-            },
-            "isApproved":{
-             "type": "boolean"
-            },
-            "score":{
-             "type": "long"
-            },
-            "isPublic":{
-              "type": "boolean"
-            },
-            "updatedAt":{
-	          "type": "date"
-	        },
-	        "createdBy":{
-	          "type": "text"
-	        },
-	        "lastModifiedBy":{
-	          "type": "text"
-	        },
-	        "version":{
-	          "type": "long"
-	        }   
-          }
-        }
+        }       
       }  
     }
 }

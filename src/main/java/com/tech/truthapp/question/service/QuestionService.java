@@ -26,8 +26,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
-import co.elastic.clients.elasticsearch.core.DeleteRequest;
-import co.elastic.clients.elasticsearch.core.DeleteResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -71,7 +69,7 @@ public class QuestionService {
 		IndexResponse response = elasticsearchClient
 				.index(i -> i.index(indexName).id(question.getId()).document(question));
 		if (response.result().name().equals("Created")) {
-
+			log.info("Successfully Created");
 		} else {
 			throw new Exception("Exception here");
 		}
@@ -168,13 +166,13 @@ public class QuestionService {
 		Question dbQuestion = hitQuestion.source();
 		if (questionDTO.getIsApproved()) {
 			dbQuestion.setIsApproved(Boolean.TRUE);
-			dbQuestion.setCategory(questionDTO.getCategory());
 		} else {
 			dbQuestion.setIsApproved(Boolean.FALSE);
 			Long score = dbQuestion.getScore();
 			score = score - 1L;
 			dbQuestion.setScore(score);
 		}
+		dbQuestion.setGroup(questionDTO.getGroup());
 		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);
 		QuestionReviewer questionReviewer = new QuestionReviewer();
 		questionReviewer.setReviewerId(userId);
@@ -195,6 +193,9 @@ public class QuestionService {
 	}
 	
 	public List<QuestionDTO> getAllQuestionsByUser(String userId) throws Exception {
+		Integer maxScore = 0;
+		Query scoreQuery = RangeQuery.of(r -> r 
+				.field("score").gt(JsonData.of(maxScore)))._toQuery();	
 		Query userIdQuery = MatchQuery.of(m -> m 
 				.field("createdBy").query(userId))._toQuery();
 		
@@ -203,6 +204,7 @@ public class QuestionService {
 	            .query(q -> q
 	                .bool(b -> b 
 	                    .must(userIdQuery) 
+	                    .must(scoreQuery) 
 	                )
 	            ),
 	            Question.class
@@ -249,6 +251,74 @@ public class QuestionService {
 		return dtoList;
 	}
 
+	public List<QuestionDTO> getReviewedQuestionsByCategoryAndSubCategory(String category, String subCategory) throws Exception {
+		Boolean isApproved = true;
+		Boolean isPublic = true;		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query categoryQuery = MatchQuery.of(m -> m 
+				.field("category").query(category))._toQuery();
+		
+		Query subcategoryQuery = MatchQuery.of(m -> m 
+				.field("subCategory").query(subCategory))._toQuery();
+		
+		SearchResponse<Question> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(categoryQuery)
+	                    .must(subcategoryQuery)
+	                    .must(isApprovedQuery) 
+	                    .must(isPublicQuery) 
+	                )
+	            ),
+	            Question.class
+	        );
+		List<Hit<Question>> hits = response.hits().hits();
+		List<Question> dbList = new ArrayList<>();
+		for (Hit<Question> hit : hits) {
+			Question question = hit.source();
+			dbList.add(question);
+		}
+		List<QuestionDTO> dtoList = questionMapper.toDto(dbList);
+		return dtoList;
+	}
+	
+	public List<QuestionDTO> getReviewedQuestionsByGroup(String group) throws Exception {
+		Boolean isApproved = true;
+		Boolean isPublic = true;		
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+				.field("isApproved").query(isApproved))._toQuery();
+		Query isPublicQuery = MatchQuery.of(m -> m 
+				.field("isPublic").query(isPublic))._toQuery();
+		
+		Query groupQuery = MatchQuery.of(m -> m 
+				.field("group").query(group))._toQuery();
+		
+		SearchResponse<Question> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(groupQuery)
+	                    .must(isApprovedQuery) 
+	                    .must(isPublicQuery) 
+	                )
+	            ),
+	            Question.class
+	        );
+		List<Hit<Question>> hits = response.hits().hits();
+		List<Question> dbList = new ArrayList<>();
+		for (Hit<Question> hit : hits) {
+			Question question = hit.source();
+			dbList.add(question);
+		}
+		List<QuestionDTO> dtoList = questionMapper.toDto(dbList);
+		return dtoList;
+	}
+	
 	public QuestionDTO createQuestionResponse(String questionId, QuestionResponsesDTO responseDTO) throws Exception {
 		Query questionIdQuery = MatchQuery.of(m -> m 
 				.field("id").query(questionId))._toQuery();
@@ -274,6 +344,7 @@ public class QuestionService {
 		questionResponse.setId(UUID.randomUUID().toString());		
 		questionResponse.setScore(2L);
 		questionResponse.setIsApproved(Boolean.FALSE);
+		questionResponse.setIsPublic(Boolean.TRUE);
 		questionResponseAuditService.updateQuestionAuditOnCreate(questionResponse);
 		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);
 		dbQuestion.getResponses().add(questionResponse);
@@ -478,9 +549,95 @@ public class QuestionService {
 		return dtoList;
 	}
 	
-	public void deleteQuestion(String questionId) throws Exception {
-		DeleteRequest request = DeleteRequest.of(d -> d.index(indexName).id(questionId));
-		DeleteResponse deleteResponse = elasticsearchClient.delete(request);
-		log.info(deleteResponse.result().toString());
+	/**
+	 * 
+	 * @param questionId
+	 * @param questionDTO
+	 * @return
+	 * @throws Exception
+	 */
+	public QuestionDTO updateQuestion(String questionId, QuestionDTO questionDTO) throws Exception {
+		Integer maxScore = 0;
+		Query scoreQuery = RangeQuery.of(r -> r 
+				.field("score").gt(JsonData.of(maxScore)))._toQuery();
+		Query questionIdQuery = MatchQuery.of(m -> m 
+				.field("id").query(questionId))._toQuery();		
+		 Boolean isApproved = false;
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+					.field("isApproved").query(isApproved))._toQuery();
+		
+		SearchResponse<Question> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(questionIdQuery)
+	                    .must(isApprovedQuery)
+	                    .must(scoreQuery)
+	                )
+	            ),
+	            Question.class
+	        );
+		List<Hit<Question>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for question id " + questionId);
+		}
+		Hit<Question> hitQuestion = hits.get(0);
+		Question dbQuestion = hitQuestion.source();
+		dbQuestion.setQuestion(questionDTO.getQuestion());
+		dbQuestion.setIsPublic(questionDTO.getIsPublic());
+		dbQuestion.setCategory(questionDTO.getCategory());
+		dbQuestion.setSubCategory(questionDTO.getSubCategory());
+		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);
+		IndexResponse indexResponse = elasticsearchClient
+				.index(i -> i.index(indexName).id(dbQuestion.getId()).document(dbQuestion));
+		if (indexResponse.result().name().equals("Updated")) {
+			log.info("Successfully Updated Question Object");
+		} else {
+			throw new Exception("Exception here");
+		}		
+		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
+		return dtoObject;
+	}
+	
+	/**
+	 * 
+	 * @param questionId
+	 * @return
+	 * @throws Exception
+	 */
+	public QuestionDTO deleteQuestion(String questionId) throws Exception {
+		Query questionIdQuery = MatchQuery.of(m -> m 
+				.field("id").query(questionId))._toQuery();		
+		 Boolean isApproved = false;
+		Query isApprovedQuery = MatchQuery.of(m -> m 
+					.field("isApproved").query(isApproved))._toQuery();
+		
+		SearchResponse<Question> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(questionIdQuery)
+	                    .must(isApprovedQuery)
+	                )
+	            ),
+	            Question.class
+	        );
+		List<Hit<Question>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for question id " + questionId);
+		}
+		Hit<Question> hitQuestion = hits.get(0);
+		Question dbQuestion = hitQuestion.source();
+		dbQuestion.setScore(-1L);
+		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);
+		IndexResponse indexResponse = elasticsearchClient
+				.index(i -> i.index(indexName).id(dbQuestion.getId()).document(dbQuestion));
+		if (indexResponse.result().name().equals("Updated")) {
+			log.info("Successfully Updated Question Object");
+		} else {
+			throw new Exception("Exception here");
+		}		
+		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
+		return dtoObject;
 	}
 }

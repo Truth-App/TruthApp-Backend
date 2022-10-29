@@ -25,7 +25,10 @@ public class Share extends BaseModel {
 	String share;
 	String shareType;
 	String category;
-	Integer score;
+	String subCategory;
+	String group;
+	String status;
+	Long score;
 	Boolean isPublic;
 	Boolean isApproved;
 

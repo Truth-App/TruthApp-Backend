@@ -23,11 +23,13 @@ public class Prayer extends BaseModel{
 	@Id
 	String id;
 	String prayer;
-	String prayerType;	
 	String category;
+	String subCategory;
+	String group;
 	Long score;
 	Boolean isPublic;
 	Boolean isApproved;
+	String status;
 	
 	@Field(type = FieldType.Nested)
 	List<PrayerResponse> responses = new ArrayList<PrayerResponse>();

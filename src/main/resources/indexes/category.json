@@ -28,34 +28,13 @@
           "search_analyzer": "standard"
         },
         "id":{
-        "type": "text"
-        },
-        "question":{
-         "type": "text",
-         "analyzer": "autocomplete", 
-         "search_analyzer": "standard",
-         "copy_to": "search_field"
-        },
-        "questionType":{
-          "type": "text"
+        	"type": "text"
         },
         "category":{
           "type": "text"
         },
-        "subCategory":{
-          "type": "text"
-        },
-         "group":{
-          "type": "text"
-        },
-        "score":{
-          "type": "long"
-        },
-        "isPublic":{
-          "type": "boolean"
-        },
-        "isApproved":{
-          "type": "boolean"
+        "createdAt":{
+         "type": "date"
         },
         "updatedAt":{
          "type": "date"
@@ -68,40 +47,34 @@
         },
         "version":{
          "type": "long"
-        },   
-        "responses":{
+        },        
+        "subCategoryList":{
           "type": "nested",
           "properties": {
             "id":{
               "type": "text"
             },
-            "response":{
+            "categoryId":{
               "type": "text"
             },
-            "responderId":{
+            "subCategory":{
              "type": "text"
             },
-            "isApproved":{
-             "type": "boolean"
-            },
-            "score":{
-             "type": "long"
-            },
-            "isPublic":{
-              "type": "boolean"
+            "createdAt":{
+             "type": "date"
             },
             "updatedAt":{
-	          "type": "date"
-	        },
-	        "createdBy":{
-	          "type": "text"
-	        },
-	        "lastModifiedBy":{
-	          "type": "text"
-	        },
-	        "version":{
-	          "type": "long"
-	        }   
+             "type": "date"
+            },
+            "createdBy":{
+             "type": "text"
+            },
+            "lastModifiedBy":{
+             "type": "text"
+            },
+            "version":{
+             "type": "long"
+            }
           }
         }
       }  

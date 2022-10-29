@@ -18,10 +18,12 @@ public class ShareDTO extends BaseDTO{
 	String id;
 	String share;
 	String shareType;
-	String category;	
+	String category;
+	String subCategory;
+	String group;	
 	Boolean isPublic;
 	Boolean isApproved;
-	Integer score;
+	Long score;
 	List<ShareResponsesDTO> responses;
 	List<ShareReviewerDTO> reviews;
 }

@@ -1,4 +1,4 @@
-package com.tech.truthapp.dto.share;
+package com.tech.truthapp.dto.group;
 
 import com.tech.truthapp.dto.BaseDTO;
 
@@ -7,14 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Setter
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
-public class ShareReviewerDTO extends BaseDTO{
+public class GroupDTO extends BaseDTO{
 
-	String id;
-	String comments;	
-	String reviewerId;
-	
+	private String id;
+	private String group;
 }

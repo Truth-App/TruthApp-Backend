@@ -1,4 +1,4 @@
-package com.tech.truthapp.model.question;
+package com.tech.truthapp.model.tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,24 +13,18 @@ import com.tech.truthapp.model.BaseModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-@Document(indexName = "question")
+@Document(indexName = "category")
 @Setter
 @Getter
+@ToString
 @NoArgsConstructor
-public class Question extends BaseModel{
+public class Category extends BaseModel {
 
 	@Id
-	String id;
-	String question;
-	String category;
-	String subCategory;
-	String group;
-	Long score;
-	Boolean isPublic;
-	Boolean isApproved;
+	private String id;
+	private String category;
 	@Field(type = FieldType.Nested)
-	List<QuestionResponse> responses = new ArrayList<QuestionResponse>();
-	@Field(type = FieldType.Nested)
-	List<QuestionReviewer> reviews = new ArrayList<QuestionReviewer>();
+	private List<SubCategory> subCategoryList = new ArrayList<SubCategory>();
 }
