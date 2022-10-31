@@ -376,7 +376,7 @@ public class PrayerService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updating of Prayer Request");
 		}		
 		PrayerDTO dtoObject = prayerMapper.toDto(dbPrayer);
 		return dtoObject;
@@ -539,7 +539,7 @@ public class PrayerService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updating of Prayer Request");
 		}
 		PrayerDTO dtoObject = prayerMapper.toDto(prayer);
 		return dtoObject;
@@ -629,7 +629,7 @@ public class PrayerService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Prayer Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updating of Prayer Request");
 		}		
 		PrayerDTO dtoObject = prayerMapper.toDto(prayer);
 		return dtoObject;
@@ -666,7 +666,7 @@ public class PrayerService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated ");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updating of Prayer Request");
 		}		
 		PrayerDTO dtoObject = prayerMapper.toDto(dbPrayer);
 		return dtoObject;
@@ -702,7 +702,7 @@ public class PrayerService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updating of Prayer Request");
 		}
 		PrayerDTO dtoObject = prayerMapper.toDto(dbObject);
 		return dtoObject;

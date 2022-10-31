@@ -60,7 +60,7 @@ public class ShareService {
 		if (response.result().name().equals("Created")) {
 			log.info("Successfully Created");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while creation of share request");
 		}
 		shareDTO = shareMapper.toDto(share);
 		return shareDTO;
@@ -176,7 +176,7 @@ public class ShareService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of share request");
 		}		
 		shareDTO = shareMapper.toDto(share);
 		return shareDTO;
@@ -381,7 +381,7 @@ public class ShareService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of share request");
 		}		
 		ShareDTO dtoObject = shareMapper.toDto(dbShare);
 		return dtoObject;
@@ -417,7 +417,7 @@ public class ShareService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of share request");
 		}		
 		ShareDTO dtoObject = shareMapper.toDto(dbshare);
 		return dtoObject;
@@ -454,7 +454,7 @@ public class ShareService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of share request");
 		}		
 		ShareDTO dtoObject = shareMapper.toDto(dbShare);
 		return dtoObject;
