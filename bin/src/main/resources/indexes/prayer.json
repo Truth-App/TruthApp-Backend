@@ -1,0 +1,109 @@
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "autocomplete_filter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "autocomplete": { 
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "autocomplete_filter"
+          ]
+        }
+      }
+    }
+  },
+    "mappings": {
+      "properties": {
+        "search_field":{
+          "type": "text",
+          "analyzer": "autocomplete", 
+          "search_analyzer": "standard"
+        },
+        "id":{
+        "type": "text"
+        },
+        "prayer":{
+         "type": "text",
+         "analyzer": "autocomplete", 
+         "search_analyzer": "standard",
+         "copy_to": "search_field"
+        },
+        "category":{
+          "type": "text"
+        },
+        "subCategory":{
+          "type": "text"
+        },
+         "status":{
+          "type": "text"
+        },
+         "group":{
+          "type": "text"
+        },
+        "score":{
+          "type": "long"
+        },
+        "isPublic":{
+          "type": "boolean"
+        },
+        "isApproved":{
+          "type": "boolean"
+        },
+        "updatedAt":{
+         "type": "date"
+        },
+        "createdBy":{
+         "type": "text"
+        },
+        "lastModifiedBy":{
+         "type": "text"
+        },
+        "version":{
+         "type": "long"
+        },   
+        "responses":{
+          "type": "nested",
+          "properties": {
+            "id":{
+              "type": "text"
+            },
+            "response":{
+              "type": "text"
+            },
+            "responderId":{
+             "type": "text"
+            },
+            "isApproved":{
+             "type": "boolean"
+            },
+            "score":{
+             "type": "long"
+            },
+            "isPublic":{
+              "type": "boolean"
+            },
+            "updatedAt":{
+	          "type": "date"
+	        },
+	        "createdBy":{
+	          "type": "text"
+	        },
+	        "lastModifiedBy":{
+	          "type": "text"
+	        },
+	        "version":{
+	          "type": "long"
+	        }   
+          }
+        }
+      }  
+    }
+}
