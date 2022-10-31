@@ -71,7 +71,7 @@ public class QuestionService {
 		if (response.result().name().equals("Created")) {
 			log.info("Successfully Created");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while creation of question request");
 		}
 		questionDTO = questionMapper.toDto(question);
 		return questionDTO;
@@ -186,7 +186,7 @@ public class QuestionService {
 		if (indexResponse.result().name().equals("Updated")) {
 			
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of question request");
 		}		
 		QuestionDTO updatedQuestionDTO = questionMapper.toDto(dbQuestion);
 		return updatedQuestionDTO;
@@ -353,7 +353,7 @@ public class QuestionService {
 		if (indexResponse.result().name().equals("Updated")) {
 			
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of question request");
 		}		
 		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 		return dtoObject;
@@ -500,7 +500,7 @@ public class QuestionService {
 			if (indexResponse.result().name().equals("Updated")) {
 				
 			} else {
-				throw new Exception("Exception here");
+				throw new Exception("Exception while updation of question request");
 			}	
 			QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 			return dtoObject;
@@ -593,7 +593,7 @@ public class QuestionService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Question Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of question request");
 		}		
 		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 		return dtoObject;
@@ -635,7 +635,7 @@ public class QuestionService {
 		if (indexResponse.result().name().equals("Updated")) {
 			log.info("Successfully Updated Question Object");
 		} else {
-			throw new Exception("Exception here");
+			throw new Exception("Exception while updation of question request");
 		}		
 		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 		return dtoObject;
