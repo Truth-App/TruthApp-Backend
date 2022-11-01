@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import com.tech.truthapp.question.mapper.QuestionMapper;
 import com.tech.truthapp.question.mapper.QuestionResponseMapper;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.IdsQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -639,5 +641,37 @@ public class QuestionService {
 		}		
 		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 		return dtoObject;
+	}
+	
+	/**
+	 * 
+	 * @param ids
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QuestionResponsesDTO> getAllResponses(List<String> ids) throws Exception {
+
+		Query idsQuery = IdsQuery.of(
+				m -> m.values(ids))._toQuery();
+		SearchResponse<Question> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idsQuery) 
+	                )
+	            ),
+	            Question.class
+	        );
+		List<Hit<Question>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for question id ");
+		}
+		List<Question> list = hits.stream().map(Hit::source).collect(Collectors.toList());
+		List<QuestionResponse> responsesList = list.stream()				                                             
+				                                   .flatMap(object -> object.getResponses().stream())
+				                                   .filter(object -> object.getIsApproved())
+				                                   .collect(Collectors.toList());
+		List<QuestionResponsesDTO> dtoList = questionResponseMapper.toDto(responsesList);
+		return dtoList;
 	}
 }

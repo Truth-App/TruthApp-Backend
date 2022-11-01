@@ -273,4 +273,16 @@ public class QuestionController {
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, questionId))
 				.body(updateObject);
 	}
+	/**
+	 * 
+	 * @param idList
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping("/questions/fetchresponsees")
+	public ResponseEntity<List<QuestionResponsesDTO>> fetchResponsees(@RequestBody List<String> idList) throws Exception {
+		log.debug("REST request to get fetchResponsees {} ", idList);
+		List<QuestionResponsesDTO> list = questionService.getAllResponses(idList);
+		return ResponseEntity.ok().body(list);
+	}
 }
