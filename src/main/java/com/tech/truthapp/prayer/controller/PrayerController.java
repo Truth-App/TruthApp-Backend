@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tech.truthapp.dto.prayer.PrayerDTO;
 import com.tech.truthapp.dto.prayer.PrayerResponsesDTO;
+import com.tech.truthapp.dto.prayer.ValidatePrayerDTO;
 import com.tech.truthapp.exception.HeaderUtil;
 import com.tech.truthapp.prayer.service.PrayerService;
 import com.tech.truthapp.prayer.validation.PrayerValidator;
@@ -110,7 +111,7 @@ public class PrayerController {
 	 */
 	@PutMapping("/prayers/{userId}/validateprayer")
 	public ResponseEntity<PrayerDTO> reviewPrayers(@PathVariable("userId") String userId,
-			@Valid @RequestBody PrayerDTO prayerDTO) throws Exception {
+			@Valid @RequestBody ValidatePrayerDTO prayerDTO) throws Exception {
 		log.debug("REST request to get Validate Prayer {},{}", userId, prayerDTO);
 		PrayerDTO updateObject = prayerService.validatePrayer(userId, prayerDTO);
 		return ResponseEntity.created(new URI("/api/prayers/validateprayer"))
@@ -293,5 +294,18 @@ public class PrayerController {
 		return ResponseEntity.created(new URI("/api/questions/reviewedquestions"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, prayerId))
 				.body(prayerDTO);
+	}
+	
+	/**
+	 * 
+	 * @param idList
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping("/prayers/fetchresponsees")
+	public ResponseEntity<List<PrayerResponsesDTO>> fetchResponsees(@RequestBody List<String> idList) throws Exception {
+		log.debug("REST request to get fetchResponsees {} ", idList);
+		List<PrayerResponsesDTO> list = prayerService.getAllResponses(idList);
+		return ResponseEntity.ok().body(list);
 	}
 }

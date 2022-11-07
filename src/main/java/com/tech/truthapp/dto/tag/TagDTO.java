@@ -1,5 +1,6 @@
 package com.tech.truthapp.dto.tag;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.tech.truthapp.dto.BaseDTO;
@@ -20,5 +21,6 @@ public class TagDTO extends BaseDTO {
 	private String tagType;
 	private String category;
 	private String subCategory;
-	private List<String> subList;
+	private String group;
+	private List<String> subList = new ArrayList<String>();
 }

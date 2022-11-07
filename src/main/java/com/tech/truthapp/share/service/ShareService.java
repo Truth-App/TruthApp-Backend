@@ -10,9 +10,13 @@ import org.springframework.stereotype.Service;
 import com.tech.truthapp.audit.share.ShareAuditService;
 import com.tech.truthapp.audit.share.ShareReviewAuditService;
 import com.tech.truthapp.dto.share.ShareDTO;
+import com.tech.truthapp.dto.share.ValidateShareDTO;
+import com.tech.truthapp.dto.tag.TagDTO;
 import com.tech.truthapp.model.share.Share;
 import com.tech.truthapp.model.share.ShareReviewer;
 import com.tech.truthapp.share.mapper.ShareMapper;
+import com.tech.truthapp.tag.service.TagService;
+import com.tech.truthapp.util.Util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
@@ -41,6 +45,9 @@ public class ShareService {
 	
 	@Autowired
 	private ShareReviewAuditService shareReviewAuditService;
+	
+	@Autowired
+	private TagService tagService;
 	
 	/**
 	 * 
@@ -134,7 +141,7 @@ public class ShareService {
 		return dtoList;
 	}
 	
-	public ShareDTO validateShare(String userId, ShareDTO shareDTO) throws Exception {
+	public ShareDTO validateShare(String userId, ValidateShareDTO shareDTO) throws Exception {
 		String id = shareDTO.getId();
 		Query idQuery = MatchQuery.of(m -> m 
 				.field("id").query(id))._toQuery();
@@ -162,6 +169,31 @@ public class ShareService {
 			score = score - 1L;
 			share.setScore(score);
 		}
+		try {
+			if (shareDTO.getIsApproved()) {
+				String tagName = shareDTO.getTagName();
+				String tagId = shareDTO.getTagId();
+				TagDTO tagDTO = new TagDTO();
+				tagDTO.setTagType("Share");
+				if (!Util.isEmptyString(tagName) ) {
+					tagDTO.setTag(tagName);
+					tagDTO.setCategory(share.getCategory());
+					tagDTO.setSubCategory(share.getSubCategory());
+					tagDTO.setGroup(shareDTO.getGroup());
+					tagDTO.getSubList().add(share.getId());
+					tagService.saveTagWithQuestion(tagDTO);
+				} else if (!Util.isEmptyString(tagId)) {
+					tagDTO.setId(tagId);
+					ArrayList<String> subList = new ArrayList<>();
+					subList.add(share.getId());
+					tagService.addQuestion(tagId, subList);
+				} else {
+					throw new Exception("Exception here");
+				}
+			}
+		}catch(Exception e) {
+			throw new Exception("Exception here");
+		}
 		share.setGroup(shareDTO.getGroup());
 		ShareReviewer reviewer = new ShareReviewer();
 		reviewer.setReviewerId(userId);
@@ -178,8 +210,8 @@ public class ShareService {
 		} else {
 			throw new Exception("Exception while updation of share request");
 		}		
-		shareDTO = shareMapper.toDto(share);
-		return shareDTO;
+		ShareDTO updatedShareDTO = shareMapper.toDto(share);
+		return updatedShareDTO;
 	}
 	
 	public List<ShareDTO> getAllSharesByUser(String userId) throws Exception {

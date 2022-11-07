@@ -15,12 +15,16 @@ import com.tech.truthapp.audit.question.QuestionResponseReviewAuditService;
 import com.tech.truthapp.audit.question.QuestionReviewAuditService;
 import com.tech.truthapp.dto.question.QuestionDTO;
 import com.tech.truthapp.dto.question.QuestionResponsesDTO;
+import com.tech.truthapp.dto.question.ValidateQuestionDTO;
+import com.tech.truthapp.dto.tag.TagDTO;
 import com.tech.truthapp.model.question.Question;
 import com.tech.truthapp.model.question.QuestionResponse;
 import com.tech.truthapp.model.question.QuestionResponseReviewer;
 import com.tech.truthapp.model.question.QuestionReviewer;
 import com.tech.truthapp.question.mapper.QuestionMapper;
 import com.tech.truthapp.question.mapper.QuestionResponseMapper;
+import com.tech.truthapp.tag.service.TagService;
+import com.tech.truthapp.util.Util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.IdsQuery;
@@ -60,6 +64,9 @@ public class QuestionService {
 	
 	@Autowired
 	private QuestionResponseMapper questionResponseMapper;
+	
+	@Autowired
+	private TagService tagService;
 	
 	
 	public QuestionDTO saveQuestion(QuestionDTO questionDTO) throws Exception {
@@ -146,7 +153,7 @@ public class QuestionService {
 		return dtoList;
 	}
 	
-	public QuestionDTO validateQuestion(String userId, QuestionDTO questionDTO) throws Exception {
+	public QuestionDTO validateQuestion(String userId, ValidateQuestionDTO questionDTO) throws Exception {
 
 		Query questionIdQuery = MatchQuery.of(m -> m 
 				.field("id").query(questionDTO.getId()))._toQuery();
@@ -173,6 +180,31 @@ public class QuestionService {
 			Long score = dbQuestion.getScore();
 			score = score - 1L;
 			dbQuestion.setScore(score);
+		}
+		try {
+			if (questionDTO.getIsApproved()) {
+				String tagName = questionDTO.getTagName();
+				String tagId = questionDTO.getTagId();
+				TagDTO tagDTO = new TagDTO();
+				tagDTO.setTagType("Question");
+				if (!Util.isEmptyString(tagName) ) {
+					tagDTO.setTag(tagName);
+					tagDTO.setCategory(dbQuestion.getCategory());
+					tagDTO.setSubCategory(dbQuestion.getSubCategory());
+					tagDTO.setGroup(questionDTO.getGroup());
+					tagDTO.getSubList().add(dbQuestion.getId());
+					tagService.saveTagWithQuestion(tagDTO);
+				} else if (!Util.isEmptyString(tagId)) {
+					tagDTO.setId(tagId);
+					ArrayList<String> subList = new ArrayList<>();
+					subList.add(dbQuestion.getId());
+					tagService.addQuestion(tagId, subList);
+				} else {
+					throw new Exception("Exception here");
+				}
+			}
+		}catch(Exception e) {
+			throw new Exception("Exception here");
 		}
 		dbQuestion.setGroup(questionDTO.getGroup());
 		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tech.truthapp.dto.question.QuestionDTO;
 import com.tech.truthapp.dto.question.QuestionResponsesDTO;
+import com.tech.truthapp.dto.question.ValidateQuestionDTO;
 import com.tech.truthapp.exception.HeaderUtil;
 import com.tech.truthapp.question.service.QuestionService;
 import com.tech.truthapp.question.validation.QuestionValidator;
@@ -96,9 +97,10 @@ public class QuestionController {
 	 * @throws Exception
 	 */
 	@PutMapping("/questions/{userId}/validatequestion")
-	public ResponseEntity<QuestionDTO> validatequestion(@PathVariable("userId") String userId,
-			@Valid @RequestBody QuestionDTO questionDTO) throws Exception {
+	public ResponseEntity<QuestionDTO> validateQuestion(@PathVariable("userId") String userId,
+			@Valid @RequestBody ValidateQuestionDTO questionDTO) throws Exception {
 		log.debug("REST request to get Validate Question {},{}", userId, questionDTO);
+		questionValidator.validationOnValidateQuestion(questionDTO);
 		QuestionDTO updateObject = questionService.validateQuestion(userId, questionDTO);
 		return ResponseEntity.created(new URI("/api/questions/validateQuestion"))
 				.headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userId))

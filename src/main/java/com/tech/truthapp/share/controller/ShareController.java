@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tech.truthapp.dto.share.ShareDTO;
+import com.tech.truthapp.dto.share.ValidateShareDTO;
 import com.tech.truthapp.exception.HeaderUtil;
 import com.tech.truthapp.share.service.ShareService;
 import com.tech.truthapp.share.validation.ShareValidator;
@@ -95,7 +96,7 @@ public class ShareController {
 	 */
 	@PutMapping("/share/{userId}/validateshare")
 	public ResponseEntity<ShareDTO> validateshare(@PathVariable("userId") String userId,
-			@Valid @RequestBody ShareDTO shareDTO) throws Exception {
+			@Valid @RequestBody ValidateShareDTO shareDTO) throws Exception {
 		log.debug("REST request to get Validate Share {},{}", userId, shareDTO);
 		ShareDTO updateObject = shareService.validateShare(userId, shareDTO);
 		return ResponseEntity.created(new URI("/api/share/validateshare"))
