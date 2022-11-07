@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,14 +15,19 @@ import com.tech.truthapp.audit.question.QuestionResponseReviewAuditService;
 import com.tech.truthapp.audit.question.QuestionReviewAuditService;
 import com.tech.truthapp.dto.question.QuestionDTO;
 import com.tech.truthapp.dto.question.QuestionResponsesDTO;
+import com.tech.truthapp.dto.question.ValidateQuestionDTO;
+import com.tech.truthapp.dto.tag.TagDTO;
 import com.tech.truthapp.model.question.Question;
 import com.tech.truthapp.model.question.QuestionResponse;
 import com.tech.truthapp.model.question.QuestionResponseReviewer;
 import com.tech.truthapp.model.question.QuestionReviewer;
 import com.tech.truthapp.question.mapper.QuestionMapper;
 import com.tech.truthapp.question.mapper.QuestionResponseMapper;
+import com.tech.truthapp.tag.service.TagService;
+import com.tech.truthapp.util.Util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.IdsQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -58,6 +64,9 @@ public class QuestionService {
 	
 	@Autowired
 	private QuestionResponseMapper questionResponseMapper;
+	
+	@Autowired
+	private TagService tagService;
 	
 	
 	public QuestionDTO saveQuestion(QuestionDTO questionDTO) throws Exception {
@@ -144,7 +153,7 @@ public class QuestionService {
 		return dtoList;
 	}
 	
-	public QuestionDTO validateQuestion(String userId, QuestionDTO questionDTO) throws Exception {
+	public QuestionDTO validateQuestion(String userId, ValidateQuestionDTO questionDTO) throws Exception {
 
 		Query questionIdQuery = MatchQuery.of(m -> m 
 				.field("id").query(questionDTO.getId()))._toQuery();
@@ -171,6 +180,31 @@ public class QuestionService {
 			Long score = dbQuestion.getScore();
 			score = score - 1L;
 			dbQuestion.setScore(score);
+		}
+		try {
+			if (questionDTO.getIsApproved()) {
+				String tagName = questionDTO.getTagName();
+				String tagId = questionDTO.getTagId();
+				TagDTO tagDTO = new TagDTO();
+				tagDTO.setTagType("Question");
+				if (!Util.isEmptyString(tagName) ) {
+					tagDTO.setTag(tagName);
+					tagDTO.setCategory(dbQuestion.getCategory());
+					tagDTO.setSubCategory(dbQuestion.getSubCategory());
+					tagDTO.setGroup(questionDTO.getGroup());
+					tagDTO.getSubList().add(dbQuestion.getId());
+					tagService.saveTagWithQuestion(tagDTO);
+				} else if (!Util.isEmptyString(tagId)) {
+					tagDTO.setId(tagId);
+					ArrayList<String> subList = new ArrayList<>();
+					subList.add(dbQuestion.getId());
+					tagService.addQuestion(tagId, subList);
+				} else {
+					throw new Exception("Exception here");
+				}
+			}
+		}catch(Exception e) {
+			throw new Exception("Exception here");
 		}
 		dbQuestion.setGroup(questionDTO.getGroup());
 		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);
@@ -639,5 +673,37 @@ public class QuestionService {
 		}		
 		QuestionDTO dtoObject = questionMapper.toDto(dbQuestion);
 		return dtoObject;
+	}
+	
+	/**
+	 * 
+	 * @param ids
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QuestionResponsesDTO> getAllResponses(List<String> ids) throws Exception {
+
+		Query idsQuery = IdsQuery.of(
+				m -> m.values(ids))._toQuery();
+		SearchResponse<Question> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idsQuery) 
+	                )
+	            ),
+	            Question.class
+	        );
+		List<Hit<Question>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for question id ");
+		}
+		List<Question> list = hits.stream().map(Hit::source).collect(Collectors.toList());
+		List<QuestionResponse> responsesList = list.stream()				                                             
+				                                   .flatMap(object -> object.getResponses().stream())
+				                                   .filter(object -> object.getIsApproved())
+				                                   .collect(Collectors.toList());
+		List<QuestionResponsesDTO> dtoList = questionResponseMapper.toDto(responsesList);
+		return dtoList;
 	}
 }

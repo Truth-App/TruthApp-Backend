@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,14 +15,19 @@ import com.tech.truthapp.audit.prayer.PrayerResponseReviewAuditService;
 import com.tech.truthapp.audit.prayer.PrayerReviewAuditService;
 import com.tech.truthapp.dto.prayer.PrayerDTO;
 import com.tech.truthapp.dto.prayer.PrayerResponsesDTO;
+import com.tech.truthapp.dto.prayer.ValidatePrayerDTO;
+import com.tech.truthapp.dto.tag.TagDTO;
 import com.tech.truthapp.model.prayer.Prayer;
 import com.tech.truthapp.model.prayer.PrayerResponse;
 import com.tech.truthapp.model.prayer.PrayerResponseReviewer;
 import com.tech.truthapp.model.prayer.PrayerReviewer;
 import com.tech.truthapp.prayer.mapper.PrayerMapper;
 import com.tech.truthapp.prayer.mapper.PrayerResponseMapper;
+import com.tech.truthapp.tag.service.TagService;
+import com.tech.truthapp.util.Util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.IdsQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -59,6 +65,9 @@ public class PrayerService {
 	@Autowired
 	private PrayerResponseMapper prayerResponseMapper;
 	
+	@Autowired
+	private TagService tagService;
+
 	
 	public PrayerDTO savePrayer(PrayerDTO prayerDTO) throws Exception {
 		Prayer prayer = prayerMapper.toEntity(prayerDTO);
@@ -151,7 +160,7 @@ public class PrayerService {
 	 * @return
 	 * @throws Exception
 	 */
-	public PrayerDTO validatePrayer(String userId, PrayerDTO prayerDTO) throws Exception {
+	public PrayerDTO validatePrayer(String userId, ValidatePrayerDTO prayerDTO) throws Exception {
 
 		Query prayerIdQuery = MatchQuery.of(m -> m 
 				.field("id").query(prayerDTO.getId()))._toQuery();
@@ -178,6 +187,31 @@ public class PrayerService {
 			Long score = dbObject.getScore();
 			score = score - 1L;
 			dbObject.setScore(score);
+		}
+		try {
+			if (prayerDTO.getIsApproved()) {
+				String tagName = prayerDTO.getTagName();
+				String tagId = prayerDTO.getTagId();
+				TagDTO tagDTO = new TagDTO();
+				tagDTO.setTagType("Prayer");
+				if (!Util.isEmptyString(tagName) ) {
+					tagDTO.setTag(tagName);
+					tagDTO.setCategory(dbObject.getCategory());
+					tagDTO.setSubCategory(dbObject.getSubCategory());
+					tagDTO.setGroup(prayerDTO.getGroup());
+					tagDTO.getSubList().add(dbObject.getId());
+					tagService.saveTagWithQuestion(tagDTO);
+				} else if (!Util.isEmptyString(tagId)) {
+					tagDTO.setId(tagId);
+					ArrayList<String> subList = new ArrayList<>();
+					subList.add(dbObject.getId());
+					tagService.addQuestion(tagId, subList);
+				} else {
+					throw new Exception("Exception here");
+				}
+			}
+		}catch(Exception e) {
+			throw new Exception("Exception here");
 		}
 		dbObject.setGroup(prayerDTO.getGroup());
 		prayerAuditService.updateAuditOnUpdate(dbObject);
@@ -706,6 +740,38 @@ public class PrayerService {
 		}
 		PrayerDTO dtoObject = prayerMapper.toDto(dbObject);
 		return dtoObject;
+	}
+	
+	/**
+	 * 
+	 * @param ids
+	 * @return
+	 * @throws Exception
+	 */
+	public List<PrayerResponsesDTO> getAllResponses(List<String> ids) throws Exception {
+
+		Query idsQuery = IdsQuery.of(
+				m -> m.values(ids))._toQuery();
+		SearchResponse<Prayer> response = elasticsearchClient.search(s -> s
+	            .index(indexName)
+	            .query(q -> q
+	                .bool(b -> b 
+	                    .must(idsQuery) 
+	                )
+	            ),
+	            Prayer.class
+	        );
+		List<Hit<Prayer>> hits = response.hits().hits();
+		if (hits.isEmpty()) {
+			throw new Exception("There is no record found for question id ");
+		}
+		List<Prayer> list = hits.stream().map(Hit::source).collect(Collectors.toList());
+		List<PrayerResponse> responsesList = list.stream()				                                             
+				                                   .flatMap(object -> object.getResponses().stream())
+				                                   .filter(object -> object.getIsApproved())
+				                                   .collect(Collectors.toList());
+		List<PrayerResponsesDTO> dtoList = prayerResponseMapper.toDto(responsesList);
+		return dtoList;
 	}
 	
 	public List<PrayerDTO> getAllPrayers() {		
