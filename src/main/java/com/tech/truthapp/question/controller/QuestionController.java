@@ -69,7 +69,7 @@ public class QuestionController {
 	 * @return questionDTO
 	 * @throws Exception
 	 */
-	@GetMapping("/questions/reviewedquestions")
+	@GetMapping("/questions")
 	public ResponseEntity<List<QuestionDTO>> getReviewedQuestions() throws Exception {
 
 		log.debug("REST request to get Reviewed Questions");

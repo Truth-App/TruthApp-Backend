@@ -16,15 +16,12 @@ import com.tech.truthapp.audit.question.QuestionReviewAuditService;
 import com.tech.truthapp.dto.question.QuestionDTO;
 import com.tech.truthapp.dto.question.QuestionResponsesDTO;
 import com.tech.truthapp.dto.question.ValidateQuestionDTO;
-import com.tech.truthapp.dto.tag.TagDTO;
 import com.tech.truthapp.model.question.Question;
 import com.tech.truthapp.model.question.QuestionResponse;
 import com.tech.truthapp.model.question.QuestionResponseReviewer;
 import com.tech.truthapp.model.question.QuestionReviewer;
 import com.tech.truthapp.question.mapper.QuestionMapper;
 import com.tech.truthapp.question.mapper.QuestionResponseMapper;
-import com.tech.truthapp.tag.service.TagService;
-import com.tech.truthapp.util.Util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.IdsQuery;
@@ -64,9 +61,6 @@ public class QuestionService {
 	
 	@Autowired
 	private QuestionResponseMapper questionResponseMapper;
-	
-	@Autowired
-	private TagService tagService;
 	
 	
 	public QuestionDTO saveQuestion(QuestionDTO questionDTO) throws Exception {
@@ -111,6 +105,7 @@ public class QuestionService {
 		List<Question> dbList = new ArrayList<>();
 		for (Hit<Question> hit : hits) {
 			Question question = hit.source();
+			question.getResponses().removeIf(object -> !object.getIsApproved());
 			dbList.add(question);
 		}
 		List<QuestionDTO> dtoList = questionMapper.toDto(dbList);
@@ -181,32 +176,10 @@ public class QuestionService {
 			score = score - 1L;
 			dbQuestion.setScore(score);
 		}
-		try {
-			if (questionDTO.getIsApproved()) {
-				String tagName = questionDTO.getTagName();
-				String tagId = questionDTO.getTagId();
-				TagDTO tagDTO = new TagDTO();
-				tagDTO.setTagType("Question");
-				if (!Util.isEmptyString(tagName) ) {
-					tagDTO.setTag(tagName);
-					tagDTO.setCategory(dbQuestion.getCategory());
-					tagDTO.setSubCategory(dbQuestion.getSubCategory());
-					tagDTO.setGroup(questionDTO.getGroup());
-					tagDTO.getSubList().add(dbQuestion.getId());
-					tagService.saveTagWithQuestion(tagDTO);
-				} else if (!Util.isEmptyString(tagId)) {
-					tagDTO.setId(tagId);
-					ArrayList<String> subList = new ArrayList<>();
-					subList.add(dbQuestion.getId());
-					tagService.addQuestion(tagId, subList);
-				} else {
-					throw new Exception("Exception here");
-				}
-			}
-		}catch(Exception e) {
-			throw new Exception("Exception here");
-		}
+		dbQuestion.setAgeGroup(questionDTO.getAgeGroup());
+		dbQuestion.setGender(questionDTO.getGender());
 		dbQuestion.setGroup(questionDTO.getGroup());
+		dbQuestion.setTags(questionDTO.getTags());
 		questionAuditService.updateQuestionAuditOnUpdate(dbQuestion);
 		QuestionReviewer questionReviewer = new QuestionReviewer();
 		questionReviewer.setReviewerId(userId);
@@ -247,6 +220,7 @@ public class QuestionService {
 		List<Question> dbList = new ArrayList<>();
 		for (Hit<Question> hit : hits) {
 			Question question = hit.source();
+			question.getResponses().removeIf(object -> !object.getIsApproved());
 			dbList.add(question);
 		}
 		List<QuestionDTO> dtoList = questionMapper.toDto(dbList);

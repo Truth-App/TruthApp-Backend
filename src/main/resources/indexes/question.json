@@ -48,6 +48,15 @@
          "group":{
           "type": "text"
         },
+        "ageGroup":{
+          "type": "text"
+        },
+        "gender":{
+          "type": "text"
+        },
+        "tags":{
+          "type": "text"
+        },
         "score":{
           "type": "long"
         },

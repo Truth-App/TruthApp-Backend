@@ -23,6 +23,9 @@ public class QuestionDTO extends BaseDTO{
 	Boolean isPublic;
 	Boolean isApproved;
 	Integer score;
+	String ageGroup;
+	String gender;
 	List<QuestionResponsesDTO> responses;
 	List<QuestionReviewerDTO> reviews;
+	List<String> tags;
 }

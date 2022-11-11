@@ -29,6 +29,9 @@ public class Question extends BaseModel{
 	Long score;
 	Boolean isPublic;
 	Boolean isApproved;
+	String ageGroup;
+	String gender;
+	List<String> tags = new ArrayList<String>();
 	@Field(type = FieldType.Nested)
 	List<QuestionResponse> responses = new ArrayList<QuestionResponse>();
 	@Field(type = FieldType.Nested)
